@@ -127,7 +127,7 @@ def updateSimulation(area: sector, policy: str):
 
     if area.vaccinated_program == True:
         # vaccination converts recovered and susceptible individuals to 'vaccinated'
-        area.vaccinated_proportion = area.vaccinated_proportion + area.recovered_proportion * global_recovery_fall_rate
+        area.vaccinated_proportion += vaccination_rollout_rate * area.susceptible_proportion + vaccination_rollout_rate * area.recovered_proportion - area.vaccinated_proportion * global_vaccination_fall_rate
     
 
 
