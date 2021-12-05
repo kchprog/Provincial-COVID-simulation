@@ -13,6 +13,7 @@ class Sector():
     geographic_area = 0
     longitude = 0.0
     latitude = 0.0
+    coordinates = ()
     type = "placeholder_type"
     
     per_capita_transmission_rate = 0
@@ -29,7 +30,7 @@ class Sector():
     density = 0.0
 
     distance_between_this_sector_and_other_sectors = {}
-    
+
     
     def __init__(self, name, population, geographic_area, longitude, latitude, type) -> None:
         self.name = name
@@ -37,6 +38,7 @@ class Sector():
         self.geographic_area = geographic_area # kilometers squared
         self.longitude = longitude
         self.latitude = latitude
+        self.coordinates = (longitude, latitude)
         self.type = type # large urban, urban, suburban, rural
 
         self.density = float(population) / float(geographic_area)
@@ -151,10 +153,11 @@ class simulation_system:
             sector.update_sector_sim()
         self.current_time += dt.timedelta(days=1)
 
-    def compute_and_return_sector_data(self) -> dict(Sector, tuple):
+    def compute_and_return_sector_data(self) -> dict():
         sector_data = {sector:(sector.susceptible_proportion, sector.infected_proportion, sector.recovered_proportion, sector.vaccinated_proportion) for sector in self.system_sectors}
         return sector_data
         
+    
 
 def setup() -> list[Sector]:
     # Create a list of cities
