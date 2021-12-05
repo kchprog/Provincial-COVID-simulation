@@ -65,24 +65,6 @@ class Sector():
         self.recovered_infected_ratio = self.recovered_proportion / self.infected_proportion
         self.recovered_vaccination_ratio = self.recovered_proportion / self.vaccinated_proportion
         '''
-        
-    def updateSimulation(self):
-        # implements simulated self.policy changes
-        if self.policy == 'lockdown':
-            self.per_capita_transmission_rate = self.per_capita_transmission_rate * 0.25
-            self.travelRate = self.travelRate / (2 + self.density / 100)
-        elif self.policy == 'travel ban':
-            self.travelRate = self.travelRate * 0.1
-        elif self.policy == 'open':
-            self.travelRate = self.density / 100
-            self.per_capita_transmission_rate = max(2.0 / 5 * math.log(self.density / 100.0, 2.71828), 1.0) * cfg.daily_infection_rate
-        elif self.policy == 'recover':
-            self.per_capita_transmission_rate = 0.0
-        else:
-            print('Error: invalid policy')
-
-        # calculate the transfer of infected individuals from neighboring provinces
-
         neighbors = self.neighborProvinces
         incoming_noninfected_Transfer = 0
         incomingInfectedTransfer = 0
@@ -134,6 +116,26 @@ class Sector():
             self.vaccinated_proportion += self.regional_vaccination_rollout_rate * (self.susceptible_proportion + self.recovered_proportion) 
 
 
+    def update_sector_sim(self):
+        # implements simulated self.policy changes
+        if self.policy == 'lockdown':
+            self.per_capita_transmission_rate = self.per_capita_transmission_rate * 0.25
+            self.travelRate = self.travelRate / (2 + self.density / 100)
+        elif self.policy == 'travel ban':
+            self.travelRate = self.travelRate * 0.1
+        elif self.policy == 'open':
+            self.travelRate = self.density / 100
+            self.per_capita_transmission_rate = max(2.0 / 5 * math.log(self.density / 100.0, 2.71828), 1.0) * cfg.daily_infection_rate
+        elif self.policy == 'recover':
+            self.per_capita_transmission_rate = 0.0
+        else:
+            print('Error: invalid policy')
+
+        # calculate the new S/I/R values for this individual province, including effects from incoming transfers.
+        
+        self.calculate_SIR()
+
+
 class simulation_system:
     system_sectors = []
     current_time = dt.datetime(2020, 1, 1)
@@ -144,16 +146,15 @@ class simulation_system:
     def __status__(self) -> None:
         return '{}'.format(self.system_sectors)
 
-    def updateSimulation(self) -> None:
+    def update_global_simulation(self) -> None:
         for sector in self.system_sectors:
-            sector.updateSimulation()
+            sector.update_sector_sim()
         self.current_time += dt.timedelta(days=1)
 
     def compute_and_return_sector_data(self) -> dict(Sector, tuple):
         sector_data = {sector:(sector.susceptible_proportion, sector.infected_proportion, sector.recovered_proportion, sector.vaccinated_proportion) for sector in self.system_sectors}
         return sector_data
         
-    
 
 def setup() -> list[Sector]:
     # Create a list of cities
@@ -180,13 +181,9 @@ def calculate_distance_between_Sectors(province1: Sector , province2: Sector):
     return distance
 
 
-
-
 def main():
     date = dt.datetime(2020, 1, 1)
-    
-    
-
+    sim = simulation_system()
 
 if __name__ == '__main__':
     main()
