@@ -71,7 +71,8 @@ class Sector():
         self.infected_proportion = self.infected_proportion - transition_rate
         
         print("current status: S = " + str(self.susceptible_proportion) + ", I = " + str(self.infected_proportion) + ", R = " + str(self.recovered_proportion))
-        
+
+
     def calculate_SIR(self):
         # calculate the proportion of people in the Sector that are susceptible, infected, and recovered
         '''
@@ -86,6 +87,7 @@ class Sector():
         print("calculate_SIR called")
         # algorithm for calculating the transfer of infected individuals from neighboring provinces
         
+        '''
         for neighbor in neighbors:
             incoming_noninfected_Transfer += ((neighbor.totalPopulation) * (self.travelRate / 1000) - neighbor.totalPopulation * self.travelRate * neighbor.infected_proportion / 1000) * max(2.0, 50 / self.distance_between_this_sector_and_other_sectors[neighbor.name])
             incomingInfectedTransfer += (neighbor.totalPopulation * self.travelRate * neighbor.infected_proportion / 1000) * max(2.0, 50 / self.distance_between_this_sector_and_other_sectors[neighbor.name])
@@ -93,6 +95,7 @@ class Sector():
             neighbor.suseptible_proportion -= incoming_noninfected_Transfer
             neighbor.infected_proportion -= incomingInfectedTransfer
 
+        '''
         # a portion of individuals in the 'RECOVERED' and 'VACCINATED' groups will be infected. 
 
         # calculate the new infected proportion
