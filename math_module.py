@@ -1,7 +1,6 @@
 import math
-import config as cfg
+import config as config_settings
 import csv
-import pandas as pd
 import datetime as dt
 
 
@@ -16,7 +15,7 @@ class Sector():
     coordinates = ()
     type = "placeholder_type"
     
-    per_capita_transmission_rate = 0
+    per_capita_transmission_rate: float
     vaccination_program = False
     policy = "placeholder_policy"
 
@@ -25,12 +24,10 @@ class Sector():
     recovered_infected_ratio = 0
     recovered_vaccination_ratio = 0
 
-    travelRate = 0.0
-
-    density = 0.0
+    travelRate: float
+    density: float
 
     distance_between_this_sector_and_other_sectors = {}
-
     
     def __init__(self, name, population, geographic_area, longitude, latitude, type) -> None:
         self.name = name
@@ -48,18 +45,33 @@ class Sector():
         # populated areas like cities. 
 
         # per_capita_transmission_rate is the rate at which people in a Sector will spread the virus; it is the product of the baseline infection rate and a factor adjusting for the population density
-        self.per_capita_transmission_rate = max(2.0 / 5 * math.log(self.density / 100.0, 2.71828), 1.0) * cfg.daily_infection_rate
+        self.per_capita_transmission_rate = max(max((1 / 5 * math.log(self.density / 100.0, 2.71828), 2.50)), 1.0)
         # the infection rate is the product of the r0 value and the rate of contact within a population. These arbitrary values are chosen to limit the simulated spread of the virus to a reasonable level.
 
 
     def __str__(self):
+        
         return '{} has a population of {} and an area of {} and a density of {}'.format(self.name, self.population, self.geographic_area, self.density)
 
+    def debug_print(self):
+        print("success")
 
-    def __status__(self):
+    def get_status(self):
         return '{} statistics: S == {}, I == {}, R == {}, R-vaccinated = {}'.format(self.name, self.susceptible_proportion, self.infected_proportion, self.recovered_proportion, self.vaccinated_proportion)
 
 
+    def rudimentary_test(self) -> None:
+        # debug script
+        
+        contact_rate_β = self.per_capita_transmission_rate * config_settings.daily_infection_rate
+        
+        transition_rate = -contact_rate_β * self.susceptible_proportion * self.infected_proportion / (100.00 ** 2)
+        self.susceptible_proportion = self.susceptible_proportion + transition_rate
+        self.recovered_proportion = self.recovered_proportion + self.infected_proportion * config_settings.global_recovery_rate
+        self.infected_proportion = self.infected_proportion - transition_rate
+        
+        print("current status: S = " + str(self.susceptible_proportion) + ", I = " + str(self.infected_proportion) + ", R = " + str(self.recovered_proportion))
+        
     def calculate_SIR(self):
         # calculate the proportion of people in the Sector that are susceptible, infected, and recovered
         '''
@@ -71,6 +83,7 @@ class Sector():
         incoming_noninfected_Transfer = 0
         incomingInfectedTransfer = 0
 
+        print("calculate_SIR called")
         # algorithm for calculating the transfer of infected individuals from neighboring provinces
         
         for neighbor in neighbors:
@@ -80,16 +93,19 @@ class Sector():
             neighbor.suseptible_proportion -= incoming_noninfected_Transfer
             neighbor.infected_proportion -= incomingInfectedTransfer
 
-        
-        self.susceptible_proportion = (self.susceptible_proportion + incoming_noninfected_Transfer) / self.totalPopulation + (self.recovered_proportion * cfg.recovered_vulnerability + self.vaccinated_proportion * cfg.vaccinated_vulnerability)
-
         # a portion of individuals in the 'RECOVERED' and 'VACCINATED' groups will be infected. 
 
         # calculate the new infected proportion
 
-        susceptible_individuals_infected = self.infected_proportion * self.per_capita_transmission_rate * self.susceptible_proportion + incomingInfectedTransfer
-        recovered_individuals_infected = self.recovered_proportion * cfg.recovered_vulnerability * self.per_capita_transmission_rate * self.susceptible_proportion
-        vaccinated_individuals_infected = self.vaccinated_proportion * cfg.vaccinated_vulnerability * self.per_capita_transmission_rate * self.susceptible_proportion
+        contact_rate_β = self.per_capita_transmission_rate * config_settings.daily_infection_rate
+        
+        transition_rate = -contact_rate_β * self.susceptible_proportion * self.infected_proportion / (100.00 ** 2)
+        self.susceptible_proportion = self.susceptible_proportion + transition_rate
+        self.recovered_proportion = self.recovered_proportion + self.infected_proportion * config_settings.global_recovery_rate
+        self.infected_proportion = self.infected_proportion - transition_rate
+        
+        recovered_individuals_infected = self.recovered_proportion * config_settings.recovered_vulnerability * self.per_capita_transmission_rate * self.susceptible_proportion
+        vaccinated_individuals_infected = self.vaccinated_proportion * config_settings.vaccinated_vulnerability * self.per_capita_transmission_rate * self.susceptible_proportion
 
         # proportion of infected that are not from the susceptible population
 
@@ -97,29 +113,23 @@ class Sector():
         self.recovered_infected_ratio = recovered_individuals_infected / self.totalPopulation
 
         # after taking in this data, calculate the new S/I/R values for this individual province.
-
-        self.susceptible_proportion -= susceptible_individuals_infected + recovered_individuals_infected + vaccinated_individuals_infected
-
-        self.infected_proportion += susceptible_individuals_infected + recovered_individuals_infected + vaccinated_individuals_infected - self.infected_proportion * cfg.global_recovery_rate
-    
-        self.recovered_proportion += (self.infected_proportion - self.recovered_vaccination_ratio) * cfg.global_recovery_rate - self.recovered_proportion * cfg.global_recovery_fall_rate
-
-        self.vaccinated_proportion -= self.vaccinated_proportion * cfg.global_vaccination_fall_rate
-
-        self.susceptible_proportion += self.susceptible_proportion - susceptible_individuals_infected - self.recovered_proportion * cfg.global_recovery_fall_rate + self.vaccinated_proportion * cfg.global_vaccination_fall_rate
-
+        
+        self.recovered_proportion -= recovered_individuals_infected
+        self.vaccinated_proportion -= vaccinated_individuals_infected
+        self.infected_proportion += recovered_individuals_infected + vaccinated_individuals_infected
+       
         # a certain proportion of the infected population will be vaccinated; when these individuals recover, they move back into the vaccinated population.
 
-        self.vaccinated_proportion += self.recovered_vaccination_ratio * cfg.global_recovery_rate - self.recovered_proportion * cfg.global_recovery_fall_rate
+        self.vaccinated_proportion += self.recovered_vaccination_ratio * config_settings.global_recovery_rate - self.recovered_proportion * config_settings.global_recovery_fall_rate
 
         if self.vaccination_program == True:
-            self.local_vaccination_rollout_rate = cfg.global_vaccination_rollout_rate * max(1.0, self.density / 100)
+            self.local_vaccination_rollout_rate = config_settings.global_vaccination_rollout_rate * max(1.0, self.density / 100)
             # vaccination converts recovered and susceptible individuals to 'vaccinated'
             self.vaccinated_proportion += self.regional_vaccination_rollout_rate * (self.susceptible_proportion + self.recovered_proportion) 
 
 
-    def update_sector_sim(self):
-        # implements simulated self.policy changes
+    def update_sector_sim(self) -> None:
+        # implements simulated self.policy changes through mutating internal values
         if self.policy == 'lockdown':
             self.per_capita_transmission_rate = self.per_capita_transmission_rate * 0.25
             self.travelRate = self.travelRate / (2 + self.density / 100)
@@ -127,7 +137,7 @@ class Sector():
             self.travelRate = self.travelRate * 0.1
         elif self.policy == 'open':
             self.travelRate = self.density / 100
-            self.per_capita_transmission_rate = max(2.0 / 5 * math.log(self.density / 100.0, 2.71828), 1.0) * cfg.daily_infection_rate
+            self.per_capita_transmission_rate = max(2.0 / 5 * math.log(self.density / 100.0, 2.71828), 1.0) * config_settings.daily_infection_rate
         elif self.policy == 'recover':
             self.per_capita_transmission_rate = 0.0
         else:
@@ -156,8 +166,13 @@ class simulation_system:
     def compute_and_return_sector_data(self) -> dict():
         sector_data = {sector:(sector.susceptible_proportion, sector.infected_proportion, sector.recovered_proportion, sector.vaccinated_proportion) for sector in self.system_sectors}
         return sector_data
-        
     
+    def debug_print(self) -> None:
+        print(self.current_time)
+        for sector in self.system_sectors:
+            print(sector.name)
+        print()
+
 
 def setup() -> list[Sector]:
     # Create a list of cities
@@ -187,6 +202,7 @@ def calculate_distance_between_Sectors(province1: Sector , province2: Sector):
 def main():
     date = dt.datetime(2020, 1, 1)
     sim = simulation_system()
+
 
 if __name__ == '__main__':
     main()
