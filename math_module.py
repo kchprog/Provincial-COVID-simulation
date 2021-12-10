@@ -142,8 +142,17 @@ class Sector():
        
         # a certain proportion of the infected population will be vaccinated; when these individuals recover, they move back into the vaccinated population.
 
-        self.vaccinated_proportion += self.recovered_vaccination_ratio * config_settings.global_recovery_rate - self.recovered_proportion * config_settings.global_recovery_fall_rate
+        self.vaccinated_proportion += self.recovered_vaccination_ratio * config_settings.global_recovery_rate
 
+        # some proportion of the susceptible and vaccinated populations will return to the susceptible population, to simulate
+        # the diminishing nature of immunity.
+        
+        self.recovered_proportion -= self.recovered_proportion * config_settings.global_recovery_fall_rate
+        self.vaccinated_proportion -= self.vaccinated_proportion * config_settings.global_vaccination_fall_rate
+
+        self.susceptible_proportion += self.recovered_proportion * config_settings.global_recovery_fall_rate + self.vaccinated_proportion * config_settings.global_vaccination_fall_rate
+
+        
         if self.vaccination_program == True:
             self.local_vaccination_rollout_rate = config_settings.global_vaccination_rollout_rate * max(1.0, self.density / 100)
             # vaccination converts recovered and susceptible individuals to 'vaccinated'
