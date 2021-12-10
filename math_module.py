@@ -28,6 +28,11 @@ class Sector():
     density: float
 
     neighborProvinces = {}
+
+    #different measures for cases
+    cases_cumulative: int
+    cases_active: int
+    cases_new: int
     
     def __init__(self, name, population, geographic_area, longitude, latitude, type) -> None:
         self.name = name
@@ -47,6 +52,11 @@ class Sector():
         # per_capita_transmission_rate is the rate at which people in a Sector will spread the virus; it is the product of the baseline infection rate and a factor adjusting for the population density
         self.per_capita_transmission_rate = max(math.log(self.density, 10), 0.6)
         # the infection rate is the product of the r0 value and the rate of contact within a population. These arbitrary values are chosen to limit the simulated spread of the virus to a reasonable level.
+
+
+        self.cases_cumulative = 0
+        self.cases_active = 0
+        self.cases_new = 0
 
     def initialize_neighbors(self, neighbor_list) -> None:
         # initialize the neighbor list for this sector
@@ -158,6 +168,10 @@ class Sector():
             # vaccination converts recovered and susceptible individuals to 'vaccinated'
             self.vaccinated_proportion += self.regional_vaccination_rollout_rate * (self.susceptible_proportion + self.recovered_proportion) 
 
+        #update cases
+        self.cases_cumulative = self.infectious_proportion * self.population
+        self.cases_active = (self.infectious_proportion - self.recovered_proportion) * self.population
+        self.cases_new = new_infected_pop * self.population
 
     def update_sector_sim(self) -> None:
         # implements simulated self.policy changes through mutating internal values
@@ -179,7 +193,7 @@ class Sector():
 
 
 class simulation_system:
-    system_sectors = []
+    system_sectors: list[Sector]
     current_time = dt.datetime(2020, 1, 1)
     
     def __init__(self) -> None:
@@ -200,6 +214,9 @@ class simulation_system:
         for sector in self.system_sectors:
             print(sector.name)
         print()
+
+    def get_cases(self) -> list[int]:
+        return [sector.cases_active for sector in self.system_sectors]
 
 
 def calculate_distance_between_Sectors(province1: Sector , province2: Sector):
