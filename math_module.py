@@ -25,6 +25,9 @@ class Sector():
 
     density = 0.0
 
+    cases_cumulative: int
+    cases_active: int
+
     def __init__(self, name, population, geographic_area, longitude, latitude, type):
         self.name = name
         self.population = population
@@ -42,6 +45,9 @@ class Sector():
         # per_capita_transmission_rate is the rate at which people in a Sector will spread the virus; it is the product of the baseline infection rate and a factor adjusting for the population density
         self.per_capita_transmission_rate = max(2.0 / 5 * math.log(self.density / 100.0, 2.71828), 1.0) * cfg.daily_infection_rate
         # the infection rate is the product of the r0 value and the rate of contact within a population. These arbitrary values are chosen to limit the simulated spread of the virus to a reasonable level.
+
+        self.cases_cumulative = 0
+        self.cases_active = 0
 
     def __str__(self):
         return '{} has a population of {} and an area of {} and a density of {}'.format(self.name, self.population, self.geographic_area, self.density)
@@ -133,7 +139,10 @@ def updateSimulation(region: Sector, policy: str):
 
     region.susceptible_proportion += region.susceptible_proportion - susceptible_individuals_infected - region.recovered_proportion * cfg.global_recovery_fall_rate + region.vaccinated_proportion * cfg.global_vaccination_fall_rate
 
-    
+    # update cases
+
+    region.cases_cumulative = region.infected_proportion * region.population
+    region.cases_active = (region.infected_proportion - region.recovered_proportion) * region.population
 
     # a certain proportion of the infected population will be vaccinated; when these individuals recover, they move back into the vaccinated population.
 
