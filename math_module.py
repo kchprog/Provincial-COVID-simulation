@@ -19,7 +19,7 @@ class Sector():
     vaccination_program = False
     policy = "placeholder_policy"
 
-    susceptible_proportion, infected_proportion, recovered_proportion, vaccinated_proportion = 1.0, 0.0, 0.0, 0.0
+    susceptible_proportion, infectious_proportion, recovered_proportion, vaccinated_proportion = 1.0, 0.0, 0.0, 0.0
 
     recovered_infected_ratio = 0
     recovered_vaccination_ratio = 0
@@ -64,7 +64,7 @@ class Sector():
 
 
     def get_status(self):
-        return '{} statistics: S == {}, I == {}, R == {}, R-vaccinated = {}'.format(self.name, self.susceptible_proportion, self.infected_proportion, self.recovered_proportion, self.vaccinated_proportion)
+        return '{} statistics: S == {}, I == {}, R == {}, R-vaccinated = {}'.format(self.name, self.susceptible_proportion, self.infectious_proportion, self.recovered_proportion, self.vaccinated_proportion)
 
 
     def rudimentary_test(self, iter) -> None:
@@ -72,7 +72,7 @@ class Sector():
         '''
         test_city = Sector("city", 100000, 100, 10, 10, 'urban')
         test_city.susceptible_proportion = 0.99
-        test_city.infected_proportion = 0.01
+        test_city.infectious_proportion = 0.01
         test_city.rudimentary_test(test_city, 100)
         '''
         f = open('output_test.csv', 'w')
@@ -81,20 +81,20 @@ class Sector():
         for i in range(iter):
             contact_rate_β = self.per_capita_transmission_rate * config_settings.daily_infection_rate
             
-            new_infected_pop = self.infected_proportion * contact_rate_β * self.susceptible_proportion
+            new_infected_pop = self.infectious_proportion * contact_rate_β * self.susceptible_proportion
             self.susceptible_proportion = self.susceptible_proportion - new_infected_pop
-            self.recovered_proportion = self.recovered_proportion + self.infected_proportion * config_settings.global_recovery_rate
-            self.infected_proportion = self.infected_proportion + new_infected_pop - (self.infected_proportion * config_settings.global_recovery_rate)
+            self.recovered_proportion = self.recovered_proportion + self.infectious_proportion * config_settings.global_recovery_rate
+            self.infectious_proportion = self.infectious_proportion + new_infected_pop - (self.infectious_proportion * config_settings.global_recovery_rate)
         
-            writer.writerow([self.name, self.susceptible_proportion, self.infected_proportion, self.recovered_proportion])
-        print("current status: S = " + str(self.susceptible_proportion) + ", I = " + str(self.infected_proportion) + ", R = " + str(self.recovered_proportion) + ", Sum: " + str(self.susceptible_proportion + self.infected_proportion + self.recovered_proportion))
+            writer.writerow([self.name, self.susceptible_proportion, self.infectious_proportion, self.recovered_proportion])
+        print("current status: S = " + str(self.susceptible_proportion) + ", I = " + str(self.infectious_proportion) + ", R = " + str(self.recovered_proportion) + ", Sum: " + str(self.susceptible_proportion + self.infectious_proportion + self.recovered_proportion))
         f.close()
 
     def calculate_SIR(self):
-        # calculate the proportion of people in the Sector that are susceptible, infected, and recovered
+        # MUTATOR: calculate the NEW proportion of people in the Sector that are susceptible, infected, and recovered. 
         '''
-        self.susceptible_proportion = 100.0 - self.infected_proportion - self.recovered_proportion - self.vaccinated_proportion
-        self.recovered_infected_ratio = self.recovered_proportion / self.infected_proportion
+        self.susceptible_proportion = 100.0 - self.infectious_proportion - self.recovered_proportion - self.vaccinated_proportion
+        self.recovered_infected_ratio = self.recovered_proportion / self.infectious_proportion
         self.recovered_vaccination_ratio = self.recovered_proportion / self.vaccinated_proportion
         '''
         neighbors = self.neighborProvinces
@@ -106,25 +106,25 @@ class Sector():
         
         
         for neighbor in neighbors:
-            incoming_noninfected_transfer += ((neighbor.population) * (self.travelRate / 1000) - neighbor.population * self.travelRate * neighbor.infected_proportion / 1000) * max(2.0, 50 / self.distance_between_this_sector_and_other_sectors[neighbor.name])
-            incoming_infected_transfer += (neighbor.population * self.travelRate * neighbor.infected_proportion / 1000) * max(2.0, 50 / self.distance_between_this_sector_and_other_sectors[neighbor.name])
+            incoming_noninfected_transfer += ((neighbor.population) * (self.travelRate / 1000) - neighbor.population * self.travelRate * neighbor.infectious_proportion / 1000) * max(2.0, 50 / self.distance_between_this_sector_and_other_sectors[neighbor.name])
+            incoming_infected_transfer += (neighbor.population * self.travelRate * neighbor.infectious_proportion / 1000) * max(2.0, 50 / self.distance_between_this_sector_and_other_sectors[neighbor.name])
             # formula description: neighbor infected population, divided by one thousand, multiplied by travel rate, multiplied by a factor that depends on the distance between the two provinces
             neighbor.susceptible_proportion -= incoming_noninfected_transfer
-            neighbor.infected_proportion -= incoming_infected_transfer
+            neighbor.infectious_proportion -= incoming_infected_transfer
 
         # normalize the proportions
         self.susceptible_proportion = (self.susceptible_proportion * self.population + incoming_noninfected_transfer)/ (self.population + incoming_noninfected_transfer + incoming_infected_transfer)
-        self.infected_proportion = (self.infected_proportion * self.population + incoming_infected_transfer)/ (self.population + incoming_noninfected_transfer + incoming_infected_transfer)
+        self.infectious_proportion = (self.infectious_proportion * self.population + incoming_infected_transfer)/ (self.population + incoming_noninfected_transfer + incoming_infected_transfer)
         # a portion of individuals in the 'RECOVERED' and 'VACCINATED' groups will be infected. 
 
         # calculate the new infected proportion
 
         contact_rate_β = self.per_capita_transmission_rate * config_settings.daily_infection_rate
             
-        new_infected_pop = self.infected_proportion * contact_rate_β * self.susceptible_proportion
+        new_infected_pop = self.infectious_proportion * contact_rate_β * self.susceptible_proportion
         self.susceptible_proportion = self.susceptible_proportion - new_infected_pop
-        self.recovered_proportion = self.recovered_proportion + self.infected_proportion * config_settings.global_recovery_rate
-        self.infected_proportion = self.infected_proportion + new_infected_pop - (self.infected_proportion * config_settings.global_recovery_rate)
+        self.recovered_proportion = self.recovered_proportion + self.infectious_proportion * config_settings.global_recovery_rate
+        self.infectious_proportion = self.infectious_proportion + new_infected_pop - (self.infectious_proportion * config_settings.global_recovery_rate)
         
         recovered_individuals_infected = self.recovered_proportion * config_settings.recovered_vulnerability * self.per_capita_transmission_rate * self.susceptible_proportion
         vaccinated_individuals_infected = self.vaccinated_proportion * config_settings.vaccinated_vulnerability * self.per_capita_transmission_rate * self.susceptible_proportion
@@ -138,7 +138,7 @@ class Sector():
         
         self.recovered_proportion -= recovered_individuals_infected
         self.vaccinated_proportion -= vaccinated_individuals_infected
-        self.infected_proportion += recovered_individuals_infected + vaccinated_individuals_infected
+        self.infectious_proportion += recovered_individuals_infected + vaccinated_individuals_infected
        
         # a certain proportion of the infected population will be vaccinated; when these individuals recover, they move back into the vaccinated population.
 
@@ -161,12 +161,13 @@ class Sector():
             self.travelRate = self.density / 100
         elif self.policy == 'recover':
             self.per_capita_transmission_rate = 0.0
-        else:
-            print('Error: invalid policy')
+        # else:
+            # print('Error: invalid policy')
 
         # calculate the new S/I/R values for this individual province, including effects from incoming transfers.
         
         self.calculate_SIR()
+
 
 class simulation_system:
     system_sectors = []
@@ -180,10 +181,9 @@ class simulation_system:
             sector.update_sector_sim()
         self.current_time += dt.timedelta(days=1)
         return self.system_sectors
-        
 
     def compute_and_return_sector_data(self) -> dict():
-        sector_data = {sector:(sector.susceptible_proportion, sector.infected_proportion, sector.recovered_proportion, sector.vaccinated_proportion) for sector in self.system_sectors}
+        sector_data = {sector:(sector.susceptible_proportion, sector.infectious_proportion, sector.recovered_proportion, sector.vaccinated_proportion) for sector in self.system_sectors}
         return sector_data
 
     def debug_print(self) -> None:
