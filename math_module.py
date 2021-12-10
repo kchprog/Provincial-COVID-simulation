@@ -169,8 +169,8 @@ class Sector():
             self.vaccinated_proportion += self.regional_vaccination_rollout_rate * (self.susceptible_proportion + self.recovered_proportion) 
 
         #update cases
-        self.cases_cumulative = self.infectious_proportion * self.population
-        self.cases_active = (self.infectious_proportion - self.recovered_proportion) * self.population
+        self.cases_cumulative += new_infected_pop * self.population
+        self.cases_active = self.infectious_proportion * self.population
         self.cases_new = new_infected_pop * self.population
 
     def update_sector_sim(self) -> None:
