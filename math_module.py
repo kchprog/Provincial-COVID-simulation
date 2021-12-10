@@ -28,6 +28,9 @@ class Sector():
     density: float
 
     neighborProvinces = {}
+
+    cases_cumulative: int
+    cases_active: int
     
     def __init__(self, name, population, geographic_area, longitude, latitude, type) -> None:
         self.name = name
@@ -47,6 +50,9 @@ class Sector():
         # per_capita_transmission_rate is the rate at which people in a Sector will spread the virus; it is the product of the baseline infection rate and a factor adjusting for the population density
         self.per_capita_transmission_rate = max(math.log(self.density, 10), 0.6)
         # the infection rate is the product of the r0 value and the rate of contact within a population. These arbitrary values are chosen to limit the simulated spread of the virus to a reasonable level.
+
+        self.cases_cumulative = 0
+        self.cases_active = 0
 
     def initialize_neighbors(self, neighbor_list) -> None:
         # initialize the neighbor list for this sector
@@ -128,6 +134,10 @@ class Sector():
         recovered_individuals_infected = self.recovered_proportion * config_settings.recovered_vulnerability * self.per_capita_transmission_rate * self.susceptible_proportion
         vaccinated_individuals_infected = self.vaccinated_proportion * config_settings.vaccinated_vulnerability * self.per_capita_transmission_rate * self.susceptible_proportion
 
+        # update cases
+        self.cases_active = (self.infected_proportion - self.recovered_proportion) * self.population
+        self.cases_cumulative = self.infected_proportion * self.population
+        
         # proportion of infected that are not from the susceptible population
 
         self.recovered_vaccination_ratio = recovered_individuals_infected / self.sector_total_population
