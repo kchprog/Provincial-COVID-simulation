@@ -5,8 +5,9 @@ import datetime as dt
 
 
 class Sector():
-    # A sector represents a city.
-    
+    '''
+    A sector represents a city.
+    '''
     name = "placeholder_name"
     population = 0
     geographic_area = 0
@@ -35,6 +36,9 @@ class Sector():
     cases_new: int
     
     def __init__(self, name, population, geographic_area, longitude, latitude, type) -> None:
+        '''
+        Initializes a new Sector object
+        '''
         self.name = name
         self.population = population
         self.geographic_area = geographic_area # kilometers squared
@@ -174,7 +178,17 @@ class Sector():
         self.cases_new = new_infected_pop * self.population
 
     def update_sector_sim(self) -> None:
-        # implements simulated self.policy changes through mutating internal values
+        '''
+        Implements simulated self.policy changes through mutating internal values
+        >>> city = Sector(name='Toronto City', population=3000000, geographic_area=630, \
+            longitude=43.6532, latitude=-79.3832, type='large urban')
+        >>> city.policy = 'travel ban'
+        >>> math.isclose(city.travelRate, 47.6190476)
+        True
+        >>> city.update_sector_sim()
+        >>> math.isclose(city.travelRate, 4.76190476)
+        True
+        '''
         if self.policy == 'lockdown':
             self.per_capita_transmission_rate = self.per_capita_transmission_rate * 0.25
             self.travelRate = self.travelRate / (2 + self.density / 100)
@@ -219,13 +233,34 @@ class simulation_system:
         return [sector.cases_active for sector in self.system_sectors]
 
 
-def calculate_distance_between_Sectors(province1: Sector , province2: Sector):
-    # calculate the distance between two Sectors
-    distance = math.sqrt((province1.coordinates[0] - province2.coordinates[0]) ** 2 + (province1.coordinates[1] - province2.coordinates[1]) ** 2)
-    return distance
+def calculate_distance_between_Sectors(province1: Sector , province2: Sector) -> float:
+    '''
+    Return the distance between two Sectors in metres
+    Formula taken from https://www.movable-type.co.uk/scripts/latlong.html and translated to Python
+    >>> P1 = Sector(name='Toronto City', population=3000000, geographic_area=630, \
+            longitude=43.6532, latitude=-79.3832, type='large urban')
+    >>> P2 = Sector(name='Ottawa-Gatineau', population=1000000, geographic_area=380, \
+            longitude=45.4215, latitude=-75.6972, type='large urban')
+    >>> calculate_distance_between_Sectors(P1, P2)
+    412006.926518153
+    '''
+    R = 6371000
+    lat1 = province1.latitude * math.pi/180
+    lat2 = province2.latitude * math.pi/180
+    lat_difference = (province2.latitude-province1.latitude) * math.pi/180
+    long_difference = (province2.longitude-province1.longitude) * math.pi/180
+
+    a = math.sin(lat_difference/2) * math.sin(lat_difference/2) + math.cos(lat1) * math.cos(lat2) * math.sin(long_difference/2) * math.sin(long_difference/2)
+    c = 2 * math.atan(math.sqrt(a) / math.sqrt(1-a))
+
+    return R * c
+
+    # Old Method
+    # distance = math.sqrt((province1.coordinates[0] - province2.coordinates[0]) ** 2 + (province1.coordinates[1] - province2.coordinates[1]) ** 2)
+    # return distance
 
 
-def sector_setup():
+def sector_setup() -> list[Sector]:
     regions = []
     with open('City_data_config.csv', 'r') as file:
         reader = csv.reader(file)
