@@ -15,3 +15,6 @@ daily_infection_rate = global_r0 / 14.0
 # rate at which the recovered proportion of a province becomes susceptible again
 global_recovery_fall_rate = 0.04
 global_vaccination_fall_rate = 0.03
+
+#global vaccination rollout rate
+global_vaccination_rollout_rate = 0.01
