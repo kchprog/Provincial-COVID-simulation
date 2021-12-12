@@ -39,6 +39,7 @@ def main():
         for m in geodatas:
             g = geopandas.GeoDataFrame(m, crs='EPSG:4326')
             gf = gpd.GeoDataFrame(m, geometry=gpd.points_from_xy(g.latitude, g.longitude))
+            # Draws dots on map, the infected_proportion determines the translucency of the dots
             gf.plot(ax=ontario_map, color='red', markersize=g.population / 10000, alpha=g.infected * 1)
 
         # for gf in frame_datas:
