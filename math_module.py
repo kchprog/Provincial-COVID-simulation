@@ -71,7 +71,7 @@ class Sector():
 
 
     def get_status(self):
-        return '{} statistics: S == {}, I == {}, R == {}, R-vaccinated = {}'.format(self.name, self.susceptible_proportion, self.infectious_proportion, self.recovered_proportion, self.vaccinated_proportion)
+        return '{} statistics: S == {}, I == {}, R == {}, R-vaccinated = {}, sum = {}'.format(self.name, self.susceptible_proportion, self.infectious_proportion, self.recovered_proportion, self.vaccinated_proportion, self.susceptible_proportion + self.infectious_proportion + self.recovered_proportion + self.vaccinated_proportion)
 
 
     def rudimentary_test(self, iter) -> None:
