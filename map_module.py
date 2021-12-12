@@ -28,9 +28,9 @@ def main():
  def plot_city_dots():
     """ Plots city dots, is a dumb thing"""
     # reads the csv file of the city
-    sp = "/Users/howieyu/PycharmProjects/Provincial-COVID-simulation/City_data_config.csv"
+    sp = "City_data_config.csv"
     mp = pd.read_csv(sp)
-    df = gpd.read_file("/Users/howieyu/PycharmProjects/Provincial-COVID-simulation/mdf/OntarioShapefile.shp")
+    df = gpd.read_file("OntarioShapefile.shp")
     # Gets the POINT() of the x and y of the cities
     df_geo = gpd.GeoDataFrame(mp, geometry=gpd.points_from_xy(
         mp.Latitude, mp.Longitude
