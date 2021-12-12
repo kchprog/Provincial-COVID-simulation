@@ -27,29 +27,28 @@ def main():
     
     
  def plot_sectors(sectors: list):
-        df = gpd.read_file("mdf/OntarioShapefile.shp")
+        df = gpd.read_file("/Users/howieyu/PycharmProjects/Provincial-COVID-simulation/mdf/OntarioShapefile.shp")
         geodatas = []
         frame_datas = []
+        ontario_map = df.plot()
         for sector in sectors:
-            # Gets all sector attributes and store them inside of a geodata
             # geodatas.append(virus_city(s)[0])
-            mp = {'city': [sector.name], 'longitude': [sector.longitude], 'latitude': [sector.latitude],
-                  'geometry': [Point(sector.longitude, sector.latitude)]}
+            mp = {'city': [sector.name], 'population': [sector.population], 'longitude': [sector.longitude], 'latitude': [sector.latitude],
+                  'infected': [sector.infectious_proportion], 'geometry': [Point(sector.longitude, sector.latitude)]}
             geodatas.append(mp)
         for m in geodatas:
-            # creates geodata frames for all the geodatas
             g = geopandas.GeoDataFrame(m, crs='EPSG:4326')
-            frame_datas.append(gpd.GeoDataFrame(m, geometry=gpd.points_from_xy(g.latitude, g.longitude)))
-            # Plots the base ontario map
-        ontario_map = df.plot()
-        for gf in frame_datas:
-            # Plot the markers for each city
-            gf.plot(ax=ontario_map, color='red', markersize=100, alpha=0.5)
+            gf = gpd.GeoDataFrame(m, geometry=gpd.points_from_xy(g.latitude, g.longitude))
+            gf.plot(ax=ontario_map, color='red', markersize=g.population / 10000, alpha=g.infected * 1)
 
-        
-        ontario_map.legend([''])
+        # for gf in frame_datas:
+            # gf.plot(ax=ontario_map, color='red', markersize=100, alpha=0.5)
+
+        cases = {'Covid': 'red', 'vaccinated': 'green'}
+        ontario_map.legend(['Covid', 'Vaccinated'])
         # Title of map
-        plt.title('COVID Case Severity')
+        plt.title('Covid Severity')
+
         
         
  def plot_city_dots():
