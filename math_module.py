@@ -202,16 +202,29 @@ class simulation_system:
     system_sectors = []
     current_time = dt.datetime(2020, 1, 1)
     
+    province_city_population: int
+    total_s_proportion = 1.0
+    total_i_proportion = 0.0
+    total_r_proportion = 0.0
+    total_v_proportion = 0.0
+    
     def __init__(self) -> None:
         self.system_sectors = sector_setup()
         for sector in self.system_sectors:
             sector.initialize_neighbors(self.system_sectors)
+            self.province_city_population += sector.population
 
     def update_global_simulation(self) -> list():
         for sector in self.system_sectors:
             sector.update_sector_sim()
         self.current_time += dt.timedelta(days=1)
+        
+        self.total_s_proportion = sum([sector.susceptible_proportion for sector in self.system_sectors])/self.province_city_population
+        self.total_i_proportion = sum([sector.infectious_proportion for sector in self.system_sectors])/self.province_city_population
+        self.total_r_proportion = sum([sector.recovered_proportion for sector in self.system_sectors])/self.province_city_population
+        self.total_v_proportion = sum([sector.vaccinated_proportion for sector in self.system_sectors])/self.province_city_population
         return self.system_sectors
+        
 
     def compute_and_return_sector_data(self) -> dict():
         sector_data = {sector:(sector.susceptible_proportion, sector.infectious_proportion, sector.recovered_proportion, sector.vaccinated_proportion) for sector in self.system_sectors}
