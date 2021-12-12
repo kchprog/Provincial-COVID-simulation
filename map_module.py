@@ -24,9 +24,36 @@ def main():
     df = df[[]]
     df.boundary.plot()
     df.plot()
+    
+    
+ def plot_sectors(sectors: list):
+        df = gpd.read_file("mdf/OntarioShapefile.shp")
+        geodatas = []
+        frame_datas = []
+        for sector in sectors:
+            # Gets all sector attributes and store them inside of a geodata
+            # geodatas.append(virus_city(s)[0])
+            mp = {'city': [sector.name], 'longitude': [sector.longitude], 'latitude': [sector.latitude],
+                  'geometry': [Point(sector.longitude, sector.latitude)]}
+            geodatas.append(mp)
+        for m in geodatas:
+            # creates geodata frames for all the geodatas
+            g = geopandas.GeoDataFrame(m, crs='EPSG:4326')
+            frame_datas.append(gpd.GeoDataFrame(m, geometry=gpd.points_from_xy(g.latitude, g.longitude)))
+            # Plots the base ontario map
+        ontario_map = df.plot()
+        for gf in frame_datas:
+            # Plot the markers for each city
+            gf.plot(ax=ontario_map, color='red', markersize=100, alpha=0.5)
 
+        
+        ontario_map.legend([''])
+        # Title of map
+        plt.title('COVID Case Severity')
+        
+        
  def plot_city_dots():
-    """ Plots city dots, is a dumb thing"""
+    """ Plots city dots, reference code"""
     # reads the csv file of the city
     sp = "City_data_config.csv"
     mp = pd.read_csv(sp)
