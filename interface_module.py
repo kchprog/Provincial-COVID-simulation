@@ -3,7 +3,7 @@ import math_module as mSim
 from math_module import Sector as Sector
 import datetime as dt
 import config as cfg
-# import map_module
+import map_module as map
 
 
 import tkinter as tk
@@ -59,12 +59,13 @@ def convert_sector_info_to_mappable_information(input_dictionary: dict) -> dict:
     return dict_to_return
 
 
-def graph_results(input_dictionary: dict):
+def graph_results(input_dictionary: dict, key: int):
     """
     Takes in a dictionary of the simulated results as graphical_sector objects
-    and graphs them using the map_module imported.
+    and graphs them using the map_module imported. It also takes a key to plot the specific
+    epoch.
     """
-    return None
+    map.plot_sectors(input_dictionary, key)
 
 
 
