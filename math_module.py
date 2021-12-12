@@ -5,9 +5,8 @@ import datetime as dt
 
 
 class Sector():
-    '''
-    A sector represents a city.
-    '''
+    # A sector represents a city.
+    
     name = "placeholder_name"
     population = 0
     geographic_area = 0
@@ -29,16 +28,8 @@ class Sector():
     density: float
 
     neighborProvinces = {}
-
-    #different measures for cases
-    cases_cumulative: int
-    cases_active: int
-    cases_new: int
     
     def __init__(self, name, population, geographic_area, longitude, latitude, type) -> None:
-        '''
-        Initializes a new Sector object
-        '''
         self.name = name
         self.population = population
         self.geographic_area = geographic_area # kilometers squared
@@ -56,11 +47,6 @@ class Sector():
         # per_capita_transmission_rate is the rate at which people in a Sector will spread the virus; it is the product of the baseline infection rate and a factor adjusting for the population density
         self.per_capita_transmission_rate = max(math.log(self.density, 10), 0.6)
         # the infection rate is the product of the r0 value and the rate of contact within a population. These arbitrary values are chosen to limit the simulated spread of the virus to a reasonable level.
-
-
-        self.cases_cumulative = 0
-        self.cases_active = 0
-        self.cases_new = 0
 
     def initialize_neighbors(self, neighbor_list) -> None:
         # initialize the neighbor list for this sector
@@ -170,25 +156,14 @@ class Sector():
         if self.vaccination_program == True:
             self.local_vaccination_rollout_rate = config_settings.global_vaccination_rollout_rate * max(1.0, self.density / 100)
             # vaccination converts recovered and susceptible individuals to 'vaccinated'
-            self.vaccinated_proportion += self.regional_vaccination_rollout_rate * (self.susceptible_proportion + self.recovered_proportion) 
+            while self.vaccinated_proportion < 0.8:
+                self.vaccinated_proportion += self.local_vaccination_rollout_rate * (self.susceptible_proportion + self.recovered_proportion) 
+                self.susceptible_proportion -= self.local_vaccination_rollout_rate * (self.susceptible_proportion)
+                self.recovered_proportion -= self.local_vaccination_rollout_rate * (self.recovered_proportion)
 
-        #update cases
-        self.cases_cumulative += new_infected_pop * self.population
-        self.cases_active = self.infectious_proportion * self.population
-        self.cases_new = new_infected_pop * self.population
 
     def update_sector_sim(self) -> None:
-        '''
-        Implements simulated self.policy changes through mutating internal values
-        >>> city = Sector(name='Toronto City', population=3000000, geographic_area=630, \
-            longitude=43.6532, latitude=-79.3832, type='large urban')
-        >>> city.policy = 'travel ban'
-        >>> math.isclose(city.travelRate, 47.6190476)
-        True
-        >>> city.update_sector_sim()
-        >>> math.isclose(city.travelRate, 4.76190476)
-        True
-        '''
+        # implements simulated self.policy changes through mutating internal values
         if self.policy == 'lockdown':
             self.per_capita_transmission_rate = self.per_capita_transmission_rate * 0.25
             self.travelRate = self.travelRate / (2 + self.density / 100)
@@ -207,7 +182,7 @@ class Sector():
 
 
 class simulation_system:
-    system_sectors: list[Sector]
+    system_sectors = []
     current_time = dt.datetime(2020, 1, 1)
     
     def __init__(self) -> None:
@@ -229,38 +204,14 @@ class simulation_system:
             print(sector.name)
         print()
 
-    def get_cases(self) -> list[int]:
-        return [sector.cases_active for sector in self.system_sectors]
+
+def calculate_distance_between_Sectors(province1: Sector , province2: Sector):
+    # calculate the distance between two Sectors
+    distance = math.sqrt((province1.coordinates[0] - province2.coordinates[0]) ** 2 + (province1.coordinates[1] - province2.coordinates[1]) ** 2)
+    return distance
 
 
-def calculate_distance_between_Sectors(province1: Sector , province2: Sector) -> float:
-    '''
-    Return the distance between two Sectors in metres
-    Formula taken from https://www.movable-type.co.uk/scripts/latlong.html and translated to Python
-    >>> P1 = Sector(name='Toronto City', population=3000000, geographic_area=630, \
-            longitude=43.6532, latitude=-79.3832, type='large urban')
-    >>> P2 = Sector(name='Ottawa-Gatineau', population=1000000, geographic_area=380, \
-            longitude=45.4215, latitude=-75.6972, type='large urban')
-    >>> calculate_distance_between_Sectors(P1, P2)
-    412006.926518153
-    '''
-    R = 6371000
-    lat1 = province1.latitude * math.pi/180
-    lat2 = province2.latitude * math.pi/180
-    lat_difference = (province2.latitude-province1.latitude) * math.pi/180
-    long_difference = (province2.longitude-province1.longitude) * math.pi/180
-
-    a = math.sin(lat_difference/2) * math.sin(lat_difference/2) + math.cos(lat1) * math.cos(lat2) * math.sin(long_difference/2) * math.sin(long_difference/2)
-    c = 2 * math.atan(math.sqrt(a) / math.sqrt(1-a))
-
-    return R * c
-
-    # Old Method
-    # distance = math.sqrt((province1.coordinates[0] - province2.coordinates[0]) ** 2 + (province1.coordinates[1] - province2.coordinates[1]) ** 2)
-    # return distance
-
-
-def sector_setup() -> list[Sector]:
+def sector_setup():
     regions = []
     with open('City_data_config.csv', 'r') as file:
         reader = csv.reader(file)
