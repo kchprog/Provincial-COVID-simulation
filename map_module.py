@@ -27,20 +27,21 @@ def main():
     
     
  def plot_sectors(sectors: list):
-        df = gpd.read_file("/Users/howieyu/PycharmProjects/Provincial-COVID-simulation/mdf/OntarioShapefile.shp")
+        df = gpd.read_file("/mdf/OntarioShapefile.shp")
         geodatas = []
         frame_datas = []
         ontario_map = df.plot()
         for sector in sectors:
             # geodatas.append(virus_city(s)[0])
             mp = {'city': [sector.name], 'population': [sector.population], 'longitude': [sector.longitude], 'latitude': [sector.latitude],
+                  'density': [sector.density],
                   'infected': [sector.infectious_proportion], 'geometry': [Point(sector.longitude, sector.latitude)]}
             geodatas.append(mp)
         for m in geodatas:
             g = geopandas.GeoDataFrame(m, crs='EPSG:4326')
             gf = gpd.GeoDataFrame(m, geometry=gpd.points_from_xy(g.latitude, g.longitude))
             # Draws dots on map, the infected_proportion determines the translucency of the dots
-            gf.plot(ax=ontario_map, color='red', markersize=g.population / 10000, alpha=g.infected * 1)
+            gf.plot(ax=ontario_map, color='red', markersize=g.density, alpha=g.infected * 1)
 
         # for gf in frame_datas:
             # gf.plot(ax=ontario_map, color='red', markersize=100, alpha=0.5)
