@@ -41,13 +41,13 @@ def main():
             g = geopandas.GeoDataFrame(m, crs='EPSG:4326')
             gf = gpd.GeoDataFrame(m, geometry=gpd.points_from_xy(g.latitude, g.longitude))
             # Draws dots on map, the infected_proportion determines the translucency of the dots
-            gf.plot(ax=ontario_map, color='red', markersize=g.density, alpha=g.infected * 1)
+            gf.plot(ax=ontario_map, color='red', markersize=g.density/2, alpha=g.infected * 1)
 
         # for gf in frame_datas:
             # gf.plot(ax=ontario_map, color='red', markersize=100, alpha=0.5)
 
         cases = {'Covid': 'red', 'vaccinated': 'green'}
-        ontario_map.legend(['Covid', 'Vaccinated'])
+        # ontario_map.legend(['Covid', 'Vaccinated'])
         # Title of map
         plt.title('Covid Severity')
 
