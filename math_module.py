@@ -1,4 +1,5 @@
 import math
+from os import system
 import config as config_settings
 import csv
 import datetime as dt
@@ -28,6 +29,8 @@ class Sector():
     density: float
 
     neighborProvinces = {}
+    distance_to_neighbors = {}
+    
     
     def __init__(self, name, population, geographic_area, longitude, latitude, type) -> None:
         self.name = name
@@ -47,6 +50,7 @@ class Sector():
         # per_capita_transmission_rate is the rate at which people in a Sector will spread the virus; it is the product of the baseline infection rate and a factor adjusting for the population density
         self.per_capita_transmission_rate = max(math.log(self.density, 10), 0.6)
         # the infection rate is the product of the r0 value and the rate of contact within a population. These arbitrary values are chosen to limit the simulated spread of the virus to a reasonable level.
+        
 
     def initialize_neighbors(self, neighbor_list) -> None:
         # initialize the neighbor list for this sector
@@ -55,6 +59,7 @@ class Sector():
             if self.name != neighbor[0] and dist <= 500000:
                 self.neighborProvinces[neighbor] = dist
     
+
     def __str__(self):
         return '{} has a population of {} and an area of {} and a density of {}'.format(self.name, self.population, self.geographic_area, self.density)
 
@@ -90,6 +95,7 @@ class Sector():
         print("current status: S = " + str(self.susceptible_proportion) + ", I = " + str(self.infectious_proportion) + ", R = " + str(self.recovered_proportion) + ", Sum: " + str(self.susceptible_proportion + self.infectious_proportion + self.recovered_proportion))
         f.close()
 
+
     def calculate_SIR(self):
         # MUTATOR: calculate the NEW proportion of people in the Sector that are susceptible, infected, and recovered. 
         '''
@@ -106,8 +112,8 @@ class Sector():
         
         
         for neighbor in neighbors:
-            incoming_noninfected_transfer += ((neighbor.population) * (self.travelRate / 1000) - neighbor.population * self.travelRate * neighbor.infectious_proportion / 1000) * max(2.0, 50 / self.distance_between_this_sector_and_other_sectors[neighbor.name])
-            incoming_infected_transfer += (neighbor.population * self.travelRate * neighbor.infectious_proportion / 1000) * max(2.0, 50 / self.distance_between_this_sector_and_other_sectors[neighbor.name])
+            incoming_noninfected_transfer += ((neighbor.population) * (self.travelRate / 1000) - neighbor.population * self.travelRate * neighbor.infectious_proportion / 1000) * max(2.0, 50 / self.distance_to_neighbors[neighbor.name])
+            incoming_infected_transfer += (neighbor.population * self.travelRate * neighbor.infectious_proportion / 1000) * max(2.0, 50 / self.distance_to_neighbors[neighbor.name])
             # formula description: neighbor infected population, divided by one thousand, multiplied by travel rate, multiplied by a factor that depends on the distance between the two provinces
             neighbor.susceptible_proportion -= incoming_noninfected_transfer
             neighbor.infectious_proportion -= incoming_infected_transfer
@@ -163,6 +169,17 @@ class Sector():
 
 
     def update_sector_sim(self) -> None:
+        '''
+        Implements simulated self.policy changes through mutating internal values
+        >>> city = Sector(name='Toronto City', population=3000000, geographic_area=630, \
+            longitude=43.6532, latitude=-79.3832, type='large urban')
+        >>> city.policy = 'travel ban'
+        >>> math.isclose(city.travelRate, 47.6190476)
+        True
+        >>> city.update_sector_sim()
+        >>> math.isclose(city.travelRate, 4.76190476)
+        True
+        '''
         # implements simulated self.policy changes through mutating internal values
         if self.policy == 'lockdown':
             self.per_capita_transmission_rate = self.per_capita_transmission_rate * 0.25
@@ -187,6 +204,8 @@ class simulation_system:
     
     def __init__(self) -> None:
         self.system_sectors = sector_setup()
+        for sector in self.system_sectors:
+            sector.initialize_neighbors(self.system_sectors)
 
     def update_global_simulation(self) -> list():
         for sector in self.system_sectors:
@@ -232,7 +251,7 @@ def calculate_distance_between_Sectors(province1: Sector , province2: Sector) ->
     # return distance
 
 
-def sector_setup():
+def sector_setup() -> list[Sector]:
     regions = []
     with open('City_data_config.csv', 'r') as file:
         reader = csv.reader(file)
@@ -242,14 +261,15 @@ def sector_setup():
             if iterCount > 0:
                 print(row)
                 new_sector = Sector(row[0], int(row[1]), int(row[2]), float(row[3]), float(row[4]), row[5])
-                    
-                new_sector.distance_between_this_sector_and_other_sectors = {sect: calculate_distance_between_Sectors(new_sector, sect) for sect in regions}
+                new_sector.distance_to_neighbors = {sect: calculate_distance_between_Sectors(new_sector, sect) for sect in regions}
                 print(new_sector.density)
                 regions.append(new_sector)
             iterCount += 1
+    
     return regions
 
 def main():
+    # Use only for testing
     date = dt.datetime(2020, 1, 1)
     sim = simulation_system()
 
