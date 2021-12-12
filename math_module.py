@@ -52,7 +52,7 @@ class Sector():
         # initialize the neighbor list for this sector
         for neighbor in neighbor_list:
             dist = calculate_distance_between_Sectors(self, neighbor[0]) 
-            if self.name != neighbor[0] and dist <= 500:
+            if self.name != neighbor[0] and dist <= 500000:
                 self.neighborProvinces[neighbor] = dist
     
     def __str__(self):
@@ -205,10 +205,31 @@ class simulation_system:
         print()
 
 
-def calculate_distance_between_Sectors(province1: Sector , province2: Sector):
-    # calculate the distance between two Sectors
-    distance = math.sqrt((province1.coordinates[0] - province2.coordinates[0]) ** 2 + (province1.coordinates[1] - province2.coordinates[1]) ** 2)
-    return distance
+def calculate_distance_between_Sectors(province1: Sector , province2: Sector) -> float:
+    '''
+    Return the distance between two Sectors in metres
+    Formula taken from https://www.movable-type.co.uk/scripts/latlong.html and translated to Python
+    >>> P1 = Sector(name='Toronto City', population=3000000, geographic_area=630, \
+            longitude=43.6532, latitude=-79.3832, type='large urban')
+    >>> P2 = Sector(name='Ottawa-Gatineau', population=1000000, geographic_area=380, \
+            longitude=45.4215, latitude=-75.6972, type='large urban')
+    >>> calculate_distance_between_Sectors(P1, P2)
+    412006.926518153
+    '''
+    R = 6371000
+    lat1 = province1.latitude * math.pi/180
+    lat2 = province2.latitude * math.pi/180
+    lat_difference = (province2.latitude-province1.latitude) * math.pi/180
+    long_difference = (province2.longitude-province1.longitude) * math.pi/180
+
+    a = math.sin(lat_difference/2) * math.sin(lat_difference/2) + math.cos(lat1) * math.cos(lat2) * math.sin(long_difference/2) * math.sin(long_difference/2)
+    c = 2 * math.atan(math.sqrt(a) / math.sqrt(1-a))
+
+    return R * c
+
+    # Old Method
+    # distance = math.sqrt((province1.coordinates[0] - province2.coordinates[0]) ** 2 + (province1.coordinates[1] - province2.coordinates[1]) ** 2)
+    # return distance
 
 
 def sector_setup():
