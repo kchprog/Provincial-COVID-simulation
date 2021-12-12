@@ -2,7 +2,12 @@
 import math_module as mSim
 from math_module import Sector as Sector
 import datetime as dt
+
 # import map_module
+
+
+import tkinter as tk
+
 
 class math_module_processor:
     # variables
@@ -27,6 +32,8 @@ class graphable_sector:
     i_proportion = 0
     r_proportion = 0
     v_proportion = 0
+    
+    total_population = 0
     sector_type = ""
     
     def __init__(self, sector: Sector):
@@ -34,6 +41,7 @@ class graphable_sector:
         self.i_proportion = sector.infectious_proportion
         self.r_proportion = sector.recovered_proportion
         self.v_proportion = sector.vaccinated_proportion
+        self.total_population = sector.population
         self.sector_type = sector.type
 
 
@@ -42,7 +50,11 @@ def convert_sector_info_to_mappable_information(input_dictionary: dict) -> dict:
     dict_to_return = {}
     
     for key in input_dictionary:
-        dict_to_return[key] = graphable_sector(input_dictionary[key])
+        
+        list_of_graphable_sectors = []
+        for sector in input_dictionary[key]:
+            list_of_graphable_sectors.append(graphable_sector(sector))
+        dict_to_return[key] = list_of_graphable_sectors
         
     return dict_to_return
 
@@ -55,12 +67,54 @@ def graph_results(input_dictionary: dict):
     return None
 
 
+
 def main():
-    # variables
-    epochs = input("How many epochs would you like to run? ")
-    # create a new instance of the math_module_processor class
+
+    # GUI
+    root=tk.Tk()
+    
+    # setting the windows size
+    root.geometry("200x200")
+    
+    # declaring string variable
+    epochs=tk.IntVar()
+    
+    
+    def submit():
+        
+        temp=epochs.get()
+            
+        print("Input Value: " + str(temp))
+        root.destroy()
+        return temp
+        
+    name_label = tk.Label(root, text = 'Input epochs', font=('calibre',10, 'bold'))
+    
+    name_entry = tk.Entry(root,textvariable = epochs, font=('calibre',10,'normal'))
+    
+    sub_btn=tk.Button(root,text = 'Submit', command = submit)
+    
+    name_label.grid(row=0,column=0)
+    name_entry.grid(row=0,column=1)
+
+    sub_btn.grid(row=2,column=1)
+    
+    root.mainloop()
+
+
     mm = math_module_processor()
-    # run the simulation
-    mm.run_simulation(epochs)
-    # print the results
+    
+    # run the simulation, returning a dictionary of the simulation results
+    
+    data = mm.run_simulation(epochs.get())
+    
+    mappable_data = convert_sector_info_to_mappable_information(data)
+    
+
+if __name__ == "__main__":
+    main()
+    
+    
+ 
+    
     
