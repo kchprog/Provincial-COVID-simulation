@@ -110,8 +110,9 @@ class Sector():
         # algorithm for calculating the transfer of infected individuals from neighboring provinces
     
         for neighbor in self.neighbor_handler_list:
-            incoming_noninfected_transfer = ((neighbor.population) * (self.travelRate / 1000) - neighbor.population * self.travelRate * neighbor.infectious_proportion / 10) * max(2.0, 50 / self.distance_to_neighbors[neighbor.name])
-            incoming_infected_transfer = (neighbor.population * self.travelRate * neighbor.infectious_proportion / 10) * max(2.0, 50 / self.distance_to_neighbors[neighbor.name])
+            
+            distance_factor = 1.5 - math.log(neighbor.travelRate, 10) * (1/3)
+            incoming_noninfected_transfer = ((neighbor.population) * (self.travelRate / 1000) - neighbor.population * self.travelRate * neighbor.infectious_proportion / 10) * distance_factor
             # formula description: neighbor infected population, divided by one thousand, multiplied by travel rate, multiplied by a factor that depends on the distance between the two provinces
             neighbor.susceptible_proportion -= incoming_noninfected_transfer / neighbor.population
             neighbor.infectious_proportion -= incoming_infected_transfer / neighbor.population
@@ -279,7 +280,7 @@ def sector_setup() -> list[Sector]:
 
     for sect in regions:
         for neighbor in regions:
-            if sect != neighbor and calculate_distance_between_Sectors(sect, neighbor) < 300:
+            if sect != neighbor and calculate_distance_between_Sectors(sect, neighbor) < 300000 and calculate_distance_between_Sectors(sect, neighbor) > 1:
                 sect.neighbor_handler_list.append(neighbor)
                 print(sect.neighbor_handler_list)
                 
