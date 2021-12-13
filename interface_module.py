@@ -1,9 +1,11 @@
 # the interface module for the CSC110 Final project acts as a 'management system'
 import math_module as mSim
 from math_module import Sector as Sector
+import matplotlib.pyplot as plt
 import datetime as dt
 import config as cfg
-import map_module as map
+# import map_module
+
 
 
 import tkinter as tk
