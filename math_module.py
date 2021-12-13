@@ -80,8 +80,8 @@ class Sector():
             
             new_infected_pop = self.infectious_proportion * contact_rate_β * self.susceptible_proportion
             self.susceptible_proportion = self.susceptible_proportion - new_infected_pop
-            self.recovered_proportion += self.infectious_proportion * config_settings.global_recovery_rate
-            self.infectious_proportion += new_infected_pop - (self.infectious_proportion * config_settings.global_recovery_rate)
+            self.recovered_proportion = self.recovered_proportion + self.infectious_proportion * config_settings.global_recovery_rate
+            self.infectious_proportion = self.infectious_proportion + new_infected_pop - (self.infectious_proportion * config_settings.global_recovery_rate)
         
             writer.writerow([self.name, self.susceptible_proportion, self.infectious_proportion, self.recovered_proportion])
         print("current status: S = " + str(self.susceptible_proportion) + ", I = " + str(self.infectious_proportion) + ", R = " + str(self.recovered_proportion) + ", Sum: " + str(self.susceptible_proportion + self.infectious_proportion + self.recovered_proportion))
@@ -129,13 +129,13 @@ class Sector():
         contact_rate_β = self.per_capita_transmission_rate * config_settings.daily_infection_rate
             
         new_infected_pop = self.infectious_proportion * contact_rate_β * self.susceptible_proportion
-        self.susceptible_proportion -= new_infected_pop
-        self.recovered_proportion += self.infectious_proportion * config_settings.global_recovery_rate
-        self.infectious_proportion += self.infectious_proportion + new_infected_pop - (self.infectious_proportion * config_settings.global_recovery_rate)
+        self.susceptible_proportion = self.susceptible_proportion - new_infected_pop
+        self.recovered_proportion = self.recovered_proportion + self.infectious_proportion * config_settings.global_recovery_rate
+        self.infectious_proportion = self.infectious_proportion + new_infected_pop - (self.infectious_proportion * config_settings.global_recovery_rate)
         
-        recovered_individuals_infected = self.recovered_proportion * config_settings.recovered_vulnerability * contact_rate_β
-        vaccinated_individuals_infected = self.vaccinated_proportion * config_settings.vaccinated_vulnerability * contact_rate_β
-        
+        recovered_individuals_infected = self.recovered_proportion * config_settings.recovered_vulnerability * self.per_capita_transmission_rate * self.susceptible_proportion
+        vaccinated_individuals_infected = self.vaccinated_proportion * config_settings.vaccinated_vulnerability * self.per_capita_transmission_rate * self.susceptible_proportion
+
         # proportion of infected that are not from the susceptible population
 
         self.recovered_vaccination_ratio = recovered_individuals_infected / self.population
