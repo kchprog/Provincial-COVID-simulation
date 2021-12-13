@@ -27,10 +27,8 @@ class math_module_processor:
         # run the simulation
         for i in range(epochs):
             self.simulation_state_dict[i] = self.sim_system.update_global_simulation()
-            print('Day ' + str(i) + ' ' + self.simulation_state_dict[i][0].name + ' Infection Rate ' + str(self.simulation_state_dict[i][0].infectious_proportion))
-            self.provincial_stats[i] = self.sim_system.capture_provincial_stats()
+            self.provincial_stats[i] = self.sim_system.fetch_global_stats()
         return (self.simulation_state_dict, self.provincial_stats)
-
 
 class graphable_sector:
     s_proportion = 0
@@ -75,7 +73,7 @@ def graph_results(input_dictionary: dict):
 
 def main():
 
-    # GUI
+       # GUI
     root=tk.Tk()
     
     # setting the windows size
@@ -118,11 +116,25 @@ def main():
     sector_data = tuple_of_results[0]
     
     global_data = tuple_of_results[1]
+    print(global_data)
     mappable_data = convert_sector_info_to_mappable_information(sector_data)
     
-
-if __name__ == "__main__":
-    main()
+    xAxis = [key for key in global_data]
+    yAxis = [global_data[key][0] for key in global_data]
+    yAxis2 = [global_data[key][1] for key in global_data]
+    yAxis3 = [global_data[key][2] for key in global_data]
+    yAxis4 = [global_data[key][3] for key in global_data]
+    
+    plt.plot(xAxis,yAxis, label = 'susceptible_prop')
+    plt.plot(xAxis,yAxis2, label = 'infectious_prop')
+    plt.plot(xAxis,yAxis3, label = 'recovered_prop')
+    plt.plot(xAxis,yAxis4, label = 'vaccinated_prop')    
+    
+    plt.title('Compartmental Modeling of SIR stats in Ontario')
+    plt.xlabel('Date (epoch)')
+    plt.ylabel('Proportion')
+    plt.legend()
+    plt.show()
     
     
  
