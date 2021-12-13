@@ -4,7 +4,7 @@ from math_module import Sector as Sector
 import matplotlib.pyplot as plt
 import datetime as dt
 import config as cfg
-# import map_module
+import map_module as map
 
 
 
