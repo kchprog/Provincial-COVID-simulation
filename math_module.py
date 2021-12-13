@@ -28,7 +28,7 @@ class Sector():
     travelRate: float
     density: float
 
-    neighbor_handler_list = []
+    neighbor_handler_set: set[str]
     #neighbor_handler_dict is a dictionary of neighbor names and distances. 
     # The keys are the neighbor names and the values are the distances.
     
@@ -51,6 +51,8 @@ class Sector():
         # per_capita_transmission_rate is the rate at which people in a Sector will spread the virus; it is the product of the baseline infection rate and a factor adjusting for the population density
         self.per_capita_transmission_rate = max(math.log(self.density, 10), 0.6)
         # the infection rate is the product of the r0 value and the rate of contact within a population. These arbitrary values are chosen to limit the simulated spread of the virus to a reasonable level.
+
+        self.neighbor_handler_set = set()
 
     def __str__(self):
         return '{} has a population of {} and an area of {} and a density of {}'.format(self.name, self.population, self.geographic_area, self.density)
@@ -103,22 +105,6 @@ class Sector():
         self.recovered_infected_ratio = self.recovered_proportion / self.infectious_proportion
         self.recovered_vaccination_ratio = self.recovered_proportion / self.vaccinated_proportion
         '''
-        incoming_noninfected_transfer = 0
-        incoming_infected_transfer = 0
-
-        print("calculate_SIR called")
-        # algorithm for calculating the transfer of infected individuals from neighboring provinces
-    
-        for neighbor in self.neighbor_handler_list:
-            
-            distance_factor = 1.5 - math.log(neighbor.travelRate, 10) * (1/3)
-            incoming_noninfected_transfer = ((neighbor.population) * (self.travelRate / 1000) - neighbor.population * self.travelRate * neighbor.infectious_proportion / 10) * distance_factor
-            # formula description: neighbor infected population, divided by one thousand, multiplied by travel rate, multiplied by a factor that depends on the distance between the two provinces
-            neighbor.susceptible_proportion -= incoming_noninfected_transfer / neighbor.population
-            neighbor.infectious_proportion -= incoming_infected_transfer / neighbor.population
-        # normalize the proportions
-        self.susceptible_proportion = (self.susceptible_proportion * self.population + incoming_noninfected_transfer)/ (self.population + incoming_noninfected_transfer + incoming_infected_transfer)
-        self.infectious_proportion = (self.infectious_proportion * self.population + incoming_infected_transfer)/ (self.population + incoming_noninfected_transfer + incoming_infected_transfer)
         # a portion of individuals in the 'RECOVERED' and 'VACCINATED' groups will be infected. 
 
         # calculate the new infected proportion
@@ -199,7 +185,7 @@ class Sector():
 
 
 class simulation_system:
-    system_sectors = []
+    system_sectors: list[Sector]
     current_time = dt.datetime(2020, 1, 1)
     
     province_city_population = 0
@@ -216,14 +202,31 @@ class simulation_system:
     def initialize_infection(self, sector_name, proportion):
         for sector in self.system_sectors:
             if sector.name == sector_name:
-                sector.infected_proportion = proportion
-                sector.susceptible_proportion = self.susceptible_proportion - proportion
+                sector.infectious_proportion = proportion
+                sector.susceptible_proportion = sector.susceptible_proportion - proportion
                 print('Initializing infection in sector: ' + sector.name + ' with proportion: ' + str(proportion))
         
         
-    def update_global_simulation(self) -> list():
-        for sector in self.system_sectors:
+    def update_global_simulation(self) -> list[Sector]:
+        for i in range(len(self.system_sectors)):
+            sector = self.system_sectors[i]
             sector.update_sector_sim()
+            incoming_noninfected_transfer = 0
+            incoming_infected_transfer = 0
+
+            # print("calculate_SIR called")
+            # algorithm for calculating the transfer of infected individuals from neighboring provinces
+        
+            for possible_neighbor in self.system_sectors:
+                if possible_neighbor.name in sector.neighbor_handler_set:
+                    distance_factor = 1.5 - math.log(possible_neighbor.travelRate, 10) * (1/3)
+                    incoming_noninfected_transfer = ((possible_neighbor.population) * (sector.travelRate / 1000) - possible_neighbor.population * sector.travelRate * possible_neighbor.infectious_proportion / 10) * distance_factor
+                    # formula description: neighbor infected population, divided by one thousand, multiplied by travel rate, multiplied by a factor that depends on the distance between the two provinces
+                    possible_neighbor.susceptible_proportion -= incoming_noninfected_transfer / possible_neighbor.population
+                    possible_neighbor.infectious_proportion -= incoming_infected_transfer / possible_neighbor.population
+            # normalize the proportions
+            sector.susceptible_proportion = (sector.susceptible_proportion * sector.population + incoming_noninfected_transfer)/ (sector.population + incoming_noninfected_transfer + incoming_infected_transfer)
+            sector.infectious_proportion = (sector.infectious_proportion * sector.population + incoming_infected_transfer)/ (sector.population + incoming_noninfected_transfer + incoming_infected_transfer)
         self.current_time += dt.timedelta(days=1)
         
         self.total_s_proportion = sum([sector.susceptible_proportion for sector in self.system_sectors])/self.province_city_population
@@ -275,6 +278,7 @@ def calculate_distance_between_Sectors(province1: Sector , province2: Sector) ->
 
 
 def sector_setup() -> list[Sector]:
+    regions: list[Sector]
     regions = []
     with open('City_data_config.csv', 'r') as file:
         reader = csv.reader(file)
@@ -282,18 +286,17 @@ def sector_setup() -> list[Sector]:
         iterCount = 0
         for row in reader:
             if iterCount > 0:
-                print(row)
+                # print(row)
                 new_sector = Sector(row[0], int(row[1]), int(row[2]), float(row[3]), float(row[4]), row[5])
-                print(new_sector.neighbor_handler_list)
+                # print(new_sector.neighbor_handler_set)
                 regions.append(new_sector)
             iterCount += 1
 
     for sect in regions:
         for neighbor in regions:
             if sect != neighbor and calculate_distance_between_Sectors(sect, neighbor) < 300000 and calculate_distance_between_Sectors(sect, neighbor) > 1:
-                sect.neighbor_handler_list.append(neighbor)
-                print(sect.neighbor_handler_list)
-                
+                sect.neighbor_handler_set.add(neighbor.name)
+                # print(sect.neighbor_handler_set)  
     return regions
 
 
