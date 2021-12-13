@@ -263,7 +263,7 @@ class simulation_system:
             print(sector.vaccinated_proportion)
             sum_S += sector.susceptible_proportion * sector.population
             sum_I += sector.infectious_proportion * sector.population
-            sum_R += sector.infectious_proportion * sector.population
+            sum_R += sector.recovered_proportion * sector.population
             sum_V += sector.vaccinated_proportion * sector.population
         
         return [sum_S / self.province_city_population, sum_I / self.province_city_population, sum_R / self.province_city_population, sum_V / self.province_city_population]
