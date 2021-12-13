@@ -28,7 +28,7 @@ class Sector():
     travelRate: float
     density: float
 
-    neighbor_handler_dict = {}
+    neighbor_handler_list = []
     #neighbor_handler_dict is a dictionary of neighbor names and distances. 
     # The keys are the neighbor names and the values are the distances.
     
@@ -51,15 +51,6 @@ class Sector():
         # per_capita_transmission_rate is the rate at which people in a Sector will spread the virus; it is the product of the baseline infection rate and a factor adjusting for the population density
         self.per_capita_transmission_rate = max(math.log(self.density, 10), 0.6)
         # the infection rate is the product of the r0 value and the rate of contact within a population. These arbitrary values are chosen to limit the simulated spread of the virus to a reasonable level.
-        
-
-    def initialize_neighbors(self, neighbor_list: list) -> None:
-        # initialize the neighbor list for this sector
-        
-        for neighbor in neighbor_list:
-            if neighbor.name != self.name and calculate_distance_between_Sectors(self, neighbor) < 500000:
-                self.neighbor_handler_dict[neighbor.name] = calculate_distance_between_Sectors(self, neighbor)
-    
 
     def __str__(self):
         return '{} has a population of {} and an area of {} and a density of {}'.format(self.name, self.population, self.geographic_area, self.density)
@@ -95,7 +86,8 @@ class Sector():
             writer.writerow([self.name, self.susceptible_proportion, self.infectious_proportion, self.recovered_proportion])
         print("current status: S = " + str(self.susceptible_proportion) + ", I = " + str(self.infectious_proportion) + ", R = " + str(self.recovered_proportion) + ", Sum: " + str(self.susceptible_proportion + self.infectious_proportion + self.recovered_proportion))
         f.close()
-        
+
+
     def calculate_SIR(self):
         # MUTATOR: calculate the NEW proportion of people in the Sector that are susceptible, infected, and recovered. 
         '''
@@ -116,12 +108,13 @@ class Sector():
 
         print("calculate_SIR called")
         # algorithm for calculating the transfer of infected individuals from neighboring provinces
-        
-        for neighbor_name in self.neighbor_handler_dict:
-            incoming_values = handle_neighbor_transfer(self, neighbor_name)
-            incoming_infected_transfer += incoming_values[0]
-            incoming_noninfected_transfer += incoming_values[1]
-
+    
+        for neighbor in self.neighbor_handler_list:
+            incoming_noninfected_transfer = ((neighbor.population) * (self.travelRate / 1000) - neighbor.population * self.travelRate * neighbor.infectious_proportion / 10) * max(2.0, 50 / self.distance_to_neighbors[neighbor.name])
+            incoming_infected_transfer = (neighbor.population * self.travelRate * neighbor.infectious_proportion / 10) * max(2.0, 50 / self.distance_to_neighbors[neighbor.name])
+            # formula description: neighbor infected population, divided by one thousand, multiplied by travel rate, multiplied by a factor that depends on the distance between the two provinces
+            neighbor.susceptible_proportion -= incoming_noninfected_transfer / neighbor.population
+            neighbor.infectious_proportion -= incoming_infected_transfer / neighbor.population
         # normalize the proportions
         self.susceptible_proportion = (self.susceptible_proportion * self.population + incoming_noninfected_transfer)/ (self.population + incoming_noninfected_transfer + incoming_infected_transfer)
         self.infectious_proportion = (self.infectious_proportion * self.population + incoming_infected_transfer)/ (self.population + incoming_noninfected_transfer + incoming_infected_transfer)
@@ -171,6 +164,8 @@ class Sector():
                 self.susceptible_proportion -= self.local_vaccination_rollout_rate * (self.susceptible_proportion)
                 self.recovered_proportion -= self.local_vaccination_rollout_rate * (self.recovered_proportion)
 
+        if self.susceptible_proportion + self.infectious_proportion + self.recovered_proportion + self.vaccinated_proportion != 1.0:
+            self.susceptible_proportion += 1.0 - (self.susceptible_proportion + self.infectious_proportion + self.recovered_proportion + self.vaccinated_proportion)
 
     def update_sector_sim(self) -> None:
         '''
@@ -215,8 +210,8 @@ class simulation_system:
     def __init__(self) -> None:
         self.system_sectors = sector_setup()
         for sector in self.system_sectors:
-            sector.initialize_neighbors(self.system_sectors)
             self.province_city_population += sector.population
+
 
     def update_global_simulation(self) -> list():
         for sector in self.system_sectors:
@@ -240,19 +235,6 @@ class simulation_system:
             print(sector.name)
         print()
 
-
-def handle_neighbor_transfer(sector: Sector, neighbor_name: str) -> tuple:
-    neighbor = sector.neighbors[neighbor_name]
-    
-    incoming_noninfected_transfer = ((neighbor.population) * (sector.travelRate / 1000) - neighbor.population * sector.travelRate * neighbor.infectious_proportion / 1000) * max(2.0, 50 / sector.distance_to_neighbors[neighbor.name])
-    incoming_infected_transfer = (neighbor.population * sector.travelRate * neighbor.infectious_proportion / 1000) * max(2.0, 50 / sector.distance_to_neighbors[neighbor.name])
-    # formula description: neighbor infected population, divided by one thousand, multiplied by travel rate, multiplied by a factor that depends on the distance between the two provinces
-    neighbor.susceptible_proportion -= incoming_noninfected_transfer
-    neighbor.infectious_proportion -= incoming_infected_transfer
-    
-    return incoming_noninfected_transfer, incoming_infected_transfer
-    
-    
 
 def calculate_distance_between_Sectors(province1: Sector , province2: Sector) -> float:
     '''
@@ -291,12 +273,18 @@ def sector_setup() -> list[Sector]:
             if iterCount > 0:
                 print(row)
                 new_sector = Sector(row[0], int(row[1]), int(row[2]), float(row[3]), float(row[4]), row[5])
-                new_sector.distance_to_neighbors = {sect: calculate_distance_between_Sectors(new_sector, sect) for sect in regions}
-                print(new_sector.density)
+                print(new_sector.neighbor_handler_list)
                 regions.append(new_sector)
             iterCount += 1
-    
+
+    for sect in regions:
+        for neighbor in regions:
+            if sect != neighbor and calculate_distance_between_Sectors(sect, neighbor) < 300:
+                sect.neighbor_handler_list.append(neighbor)
+                print(sect.neighbor_handler_list)
+                
     return regions
+
 
 def main():
     # Use only for testing
