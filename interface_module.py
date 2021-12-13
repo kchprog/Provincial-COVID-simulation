@@ -117,6 +117,8 @@ def main():
     tuple_of_results = mm.run_simulation(epochs.get())
     sector_data = tuple_of_results[0]
     
+    graph_results(secttor_data, 0)
+    
     global_data = tuple_of_results[1]
     print(global_data)
     mappable_data = convert_sector_info_to_mappable_information(sector_data)
