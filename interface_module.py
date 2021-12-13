@@ -13,18 +13,22 @@ class math_module_processor:
     # variables
     
     simulation_state_dict = {}
-
+    
     sim_system = mSim.simulation_system()
+    
+    provincial_stats = {}
     
     def __init__(self):
         # variables
         self.simulation_state_dict = {}
+        self.provincial_stats = {}
         
-    def run_simulation(self, epochs: int) -> dict:
+    def run_simulation(self, epochs: int):
         # run the simulation
         for i in range(epochs):
             self.simulation_state_dict[i] = self.sim_system.update_global_simulation()
-        return self.simulation_state_dict
+            self.provincial_stats[i] = self.sim_system.capture_provincial_stats()
+        return (self.simulation_state_dict, self.provincial_stats)
 
 
 class graphable_sector:
@@ -101,7 +105,6 @@ def main():
     
     root.mainloop()
 
-
     mm = math_module_processor()
     
     # run the simulation, returning a dictionary of the simulation results
@@ -110,11 +113,17 @@ def main():
     
     mm.sim_system.initialize_infection("Toronto", 0.05)
         
+    tuple_of_results = mm.run_simulation(epochs.get())
+    sector_data = tuple_of_results[0]
     
-    data = mm.run_simulation(epochs.get())
-    
-    mappable_data = convert_sector_info_to_mappable_information(data)
+    global_data = tuple_of_results[1]
+    mappable_data = convert_sector_info_to_mappable_information(sector_data)
     
 
 if __name__ == "__main__":
     main()
+    
+    
+ 
+    
+    
