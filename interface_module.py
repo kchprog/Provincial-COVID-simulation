@@ -27,6 +27,7 @@ class math_module_processor:
         # run the simulation
         for i in range(epochs):
             self.simulation_state_dict[i] = self.sim_system.update_global_simulation()
+            print('Day ' + str(i) + ' ' + self.simulation_state_dict[i][0].name + ' Infection Rate ' + str(self.simulation_state_dict[i][0].infectious_proportion))
             self.provincial_stats[i] = self.sim_system.capture_provincial_stats()
         return (self.simulation_state_dict, self.provincial_stats)
 
@@ -111,7 +112,7 @@ def main():
     
     # Initialize infection
     
-    mm.sim_system.initialize_infection("Toronto", 0.05)
+    mm.sim_system.initialize_infection("Toronto City", 0.05)
         
     tuple_of_results = mm.run_simulation(epochs.get())
     sector_data = tuple_of_results[0]
