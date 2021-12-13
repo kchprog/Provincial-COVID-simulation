@@ -232,7 +232,10 @@ class simulation_system:
         self.total_v_proportion = sum([sector.vaccinated_proportion for sector in self.system_sectors])/self.province_city_population
         return self.system_sectors
         
-
+    def capture_provincial_stats(self) -> list():
+        return [self.total_s_proportion, self.total_i_proportion, self.total_r_proportion, self.total_v_proportion]
+    
+    
     def compute_and_return_sector_data(self) -> dict():
         sector_data = {sector:(sector.susceptible_proportion, sector.infectious_proportion, sector.recovered_proportion, sector.vaccinated_proportion) for sector in self.system_sectors}
         return sector_data
