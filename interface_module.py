@@ -106,6 +106,11 @@ def main():
     
     # run the simulation, returning a dictionary of the simulation results
     
+    # Initialize infection
+    
+    mm.sim_system.initialize_infection("Toronto", 0.05)
+        
+    
     data = mm.run_simulation(epochs.get())
     
     mappable_data = convert_sector_info_to_mappable_information(data)
@@ -113,8 +118,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
-    
- 
-    
-    
