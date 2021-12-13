@@ -4,8 +4,7 @@ from math_module import Sector as Sector
 import matplotlib.pyplot as plt
 import datetime as dt
 import config as cfg
-import map_module as map
-
+# import map_module
 
 
 import tkinter as tk
@@ -31,6 +30,7 @@ class math_module_processor:
             self.simulation_state_dict[i] = self.sim_system.update_global_simulation()
             self.provincial_stats[i] = self.sim_system.fetch_global_stats()
         return (self.simulation_state_dict, self.provincial_stats)
+
 
 class graphable_sector:
     s_proportion = 0
@@ -64,18 +64,18 @@ def convert_sector_info_to_mappable_information(input_dictionary: dict) -> dict:
     return dict_to_return
 
 
-def graph_results(input_dictionary: dict, key: int):
+def graph_results(input_dictionary: dict):
     """
     Takes in a dictionary of the simulated results as graphical_sector objects
     and graphs them using the map_module imported.
     """
-    map.plot_sectors(input_dictionary[key])
+    return None
 
 
 
 def main():
 
-       # GUI
+    # GUI
     root=tk.Tk()
     
     # setting the windows size
@@ -117,8 +117,6 @@ def main():
     tuple_of_results = mm.run_simulation(epochs.get())
     sector_data = tuple_of_results[0]
     
-    graph_results(secttor_data, 0)
-    
     global_data = tuple_of_results[1]
     print(global_data)
     mappable_data = convert_sector_info_to_mappable_information(sector_data)
@@ -139,6 +137,9 @@ def main():
     plt.ylabel('Proportion')
     plt.legend()
     plt.show()
+
+if __name__ == "__main__":
+    main()
     
     
  
