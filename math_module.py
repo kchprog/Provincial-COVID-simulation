@@ -213,7 +213,14 @@ class simulation_system:
         for sector in self.system_sectors:
             self.province_city_population += sector.population
 
-
+    def initialize_infection(self, sector_name, proportion):
+        for sector in self.system_sectors:
+            if sector.name == sector_name:
+                sector.infected_proportion = proportion
+                sector.susceptible_proportion = self.susceptible_proportion - proportion
+                print('Initializing infection in sector: ' + sector.name + ' with proportion: ' + str(proportion))
+        
+        
     def update_global_simulation(self) -> list():
         for sector in self.system_sectors:
             sector.update_sector_sim()
