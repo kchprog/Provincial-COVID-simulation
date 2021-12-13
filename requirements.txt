@@ -1,0 +1,15 @@
+# Data Manipulation
+math 
+datetime
+csv 
+numpy
+os
+
+# Visualization
+geopandas
+
+# Geopandas Dependencies
+pandas
+shapefile
+matplotlib.pyplot
+seaborn
