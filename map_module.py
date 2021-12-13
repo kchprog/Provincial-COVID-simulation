@@ -53,29 +53,7 @@ def plot_sectors(sectors: list):
     # ontario_map.legend(['Covid', 'Vaccinated'])
     # Title of map
     plt.title('Covid Severity')
-
-        
-        
- def plot_city_dots():
-    """ Plots city dots, reference code"""
-    # reads the csv file of the city
-    sp = "City_data_config.csv"
-    mp = pd.read_csv(sp)
-    df = gpd.read_file("OntarioShapefile.shp")
-    # Gets the POINT() of the x and y of the cities
-    df_geo = gpd.GeoDataFrame(mp, geometry=gpd.points_from_xy(
-        mp.Latitude, mp.Longitude
-    ))
-    ontario_map = df.plot()
-    # color means the dot colour, markersize is the size of the dots, alpha represents translucence
-    # It plots dots on df.plot(), which is the ontario map
-    df_geo.plot(ax=ontario_map, color='red', markersize=8, alpha=0.25)
-    df_geo.plot(ax=ontario_map, color='green', markersize=8, alpha=0.25)
-    cases = {'Covid': 'red', 'vaccinated': 'green'}
-    ontario_map.legend(['Covid', 'Vaccinated'])
-    # Title of map
-    plt.title('Plot City points')
-
+    
     
 def read_shapefile(sf):
     #fetching the headings from the shape file
