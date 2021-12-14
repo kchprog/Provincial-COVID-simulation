@@ -110,7 +110,10 @@ class Sector():
         
         for neighbor in self.neighbor_handler_list:
             if neighbor.name != self.name:
-                combined_transfer_value = neighbor.infectious_proportion * self.travelRate / (300)
+                distance_km = calculate_distance_between_Sectors(self, neighbor) / 1000.0
+                
+                
+                combined_transfer_value = neighbor.infectious_proportion * self.travelRate * max(1 - distance_km/900, 1) / 100
                 
                 self.susceptible_proportion -= combined_transfer_value
                 self.infectious_proportion += combined_transfer_value
@@ -128,11 +131,11 @@ class Sector():
         
         # simulate the higher infection observed in winter months
         if current_time.month == 10 or current_time.month == 2:
-            contact_rate_β *= 1.05
-        elif current_time.month == 11 or current_time.month == 1:
             contact_rate_β *= 1.1
+        elif current_time.month == 11 or current_time.month == 1:
+            contact_rate_β *= 1.2
         elif current_time.month == 12:
-            contact_rate_β *= 1.15
+            contact_rate_β *= 1.25
         else:
             contact_rate_β *= 1
             
@@ -318,7 +321,7 @@ def sector_setup() -> list[Sector]:
 
     for sect in regions:
         for neighbor in regions:
-            if sect != neighbor and calculate_distance_between_Sectors(sect, neighbor) < 500000 and calculate_distance_between_Sectors(sect, neighbor) > 1:
+            if sect != neighbor and calculate_distance_between_Sectors(sect, neighbor) < 1000000 and calculate_distance_between_Sectors(sect, neighbor) > 1:
                 sect.neighbor_handler_list.append(neighbor)
                 # print(sect.neighbor_handler_list)
                 
