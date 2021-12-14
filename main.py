@@ -39,7 +39,7 @@ class graphable_sector:
     i_proportion = 0
     r_proportion = 0
     v_proportion = 0
-    
+    density = 0
     longitude = 0
     latitude = 0
     
@@ -52,10 +52,10 @@ class graphable_sector:
         self.r_proportion = sector.recovered_proportion
         self.v_proportion = sector.vaccinated_proportion
         self.longitude = sector.longitude
-        sector.latitude = sector.latitude
+        self.latitude = sector.latitude
         self.total_population = sector.population
         self.sector_type = sector.type
-
+        self.density = sector.density
 
 def convert_sector_info_to_mappable_information(input_dictionary: dict) -> dict:
     # variables
