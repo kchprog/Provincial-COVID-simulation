@@ -6,9 +6,9 @@ import math
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-import shapefile as shp
+# import shapefile as shp
 import matplotlib.pyplot as plt
-import seaborn as sns
+# import seaborn as sns
 import csv
 import math_module
 from shapely.geometry import Point
@@ -35,7 +35,7 @@ def plot_sectors(data: list, day: int):
     """The plot_sectors function is used for producing the Covid Severity graph on a specific day
     
     """
-    df = gpd.read_file("mdf/OntarioShapefile.shp")
+    df = gpd.read_file("/Users/howieyu/PycharmProjects/Provincial-COVID-simulation9/mdf/OntarioShapefile.shp")
     geodatas = []
     ontario_map = df.plot()
     for mdata in data:
@@ -47,12 +47,12 @@ def plot_sectors(data: list, day: int):
     for m in geodatas:
         g = gpd.GeoDataFrame(m, crs='EPSG:4326')
         gf = gpd.GeoDataFrame(m, geometry=gpd.points_from_xy(g.latitude, g.longitude))
-        inf = min(0.97, g.infected[0] * 30)
+        inf = min(0.99, g.infected[0] * 40.0)
         # Draws dots on map, the infected_proportion determines the translucency of the dots
-        gf.plot(ax=ontario_map, color='red', markersize=g.density/2, alpha=inf * 1.0)
+        gf.plot(ax=ontario_map, color='red', markersize=g.density/2, alpha=inf)
     # ontario_map.legend(['Covid', 'Vaccinated'])
     # Title of map
-    plt.title('Covid Severity ' + str(day))
+    plt.title('Covid Severity at day ' + str(day))
     
     
 def read_shapefile(sf):
