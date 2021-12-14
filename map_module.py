@@ -31,7 +31,7 @@ def main():
     df.plot()
     
     
-def plot_sectors(data: list):
+def plot_sectors(data: list, day: int):
     """The plot_sectors function is used for producing the Covid Severity graph on a specific day
     
     """
@@ -47,12 +47,12 @@ def plot_sectors(data: list):
     for m in geodatas:
         g = gpd.GeoDataFrame(m, crs='EPSG:4326')
         gf = gpd.GeoDataFrame(m, geometry=gpd.points_from_xy(g.latitude, g.longitude))
-        inf = min(0.99, g.infected[0])
+        inf = min(0.97, g.infected[0] * 30)
         # Draws dots on map, the infected_proportion determines the translucency of the dots
         gf.plot(ax=ontario_map, color='red', markersize=g.density/2, alpha=inf * 1.0)
     # ontario_map.legend(['Covid', 'Vaccinated'])
     # Title of map
-    plt.title('Covid Severity')
+    plt.title('Covid Severity ' + day)
     
     
 def read_shapefile(sf):
