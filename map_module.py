@@ -6,9 +6,9 @@ import math
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-# import shapefile as shp
+import shapefile as shp
 import matplotlib.pyplot as plt
-# import seaborn as sns
+import seaborn as sns
 import csv
 import math_module
 from shapely.geometry import Point
@@ -35,7 +35,7 @@ def plot_sectors(data: list, day: int):
     """The plot_sectors function is used for producing the Covid Severity graph on a specific day
     
     """
-    df = gpd.read_file("/Users/howieyu/PycharmProjects/Provincial-COVID-simulation9/mdf/OntarioShapefile.shp")
+    df = gpd.read_file("mdf/OntarioShapefile.shp")
     geodatas = []
     ontario_map = df.plot()
     for mdata in data:
