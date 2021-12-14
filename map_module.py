@@ -51,7 +51,7 @@ def plot_sectors(data: list, day: int):
         gf = gpd.GeoDataFrame(m, geometry=gpd.points_from_xy(g.latitude, g.longitude))
         inf = min(0.75, g.infected[0] * 10.0)
         # Draws dots on map, the infected_proportion determines the translucency of the dots
-        gf.plot(ax=ontario_map, color='red', markersize=g.density/2, alpha=inf)
+        gf.plot(ax=ontario_map, color='red', markersize=g.density/1.5, alpha=inf)
     # Title of map
     plt.title('Covid Severity at day ' + str(day))
     
