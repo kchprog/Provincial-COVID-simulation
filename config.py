@@ -2,11 +2,11 @@
 # of Canada's "Health and Human Services Canada" website.
 
 vaccinated_vulnerability = 0.05
-recovered_vulnerability = 0.15
+recovered_vulnerability = 0.12
 
 # the average number of people a single infected individual infects over the course of the infectious period.
 # in each sector, we count this factor as being influenced by density and interaction probability; it is not a static value.
-global_r0 = 2
+global_r0 = 2.5
 
 # how quickly an infected individual recovers from the infection, becoming noninfectious. These are
 # derived from the CDC source
