@@ -4,7 +4,7 @@ from math_module import Sector as Sector
 import matplotlib.pyplot as plt
 import datetime as dt
 import config as cfg
-import map_module as map
+# import map_module
 
 
 import tkinter as tk
@@ -39,9 +39,7 @@ class graphable_sector:
     i_proportion = 0
     r_proportion = 0
     v_proportion = 0
-    longitude = 0
-    latitude = 0
-    density = 0
+    
     total_population = 0
     sector_type = ""
     
@@ -52,9 +50,6 @@ class graphable_sector:
         self.v_proportion = sector.vaccinated_proportion
         self.total_population = sector.population
         self.sector_type = sector.type
-        self.longitude = sector.longitude
-        self.latitude = sector.latitude
-        self.density = sector.density
 
 
 def convert_sector_info_to_mappable_information(input_dictionary: dict) -> dict:
@@ -71,13 +66,12 @@ def convert_sector_info_to_mappable_information(input_dictionary: dict) -> dict:
     return dict_to_return
 
 
-def graph_results(input_dictionary: dict, key: int):
+def graph_results(input_dictionary: dict):
     """
     Takes in a dictionary of the simulated results as graphical_sector objects
     and graphs them using the map_module imported.
     """
-    map.plot_sectors(input_dictionary[key])
-
+    return None
 
 
 
@@ -92,13 +86,12 @@ def main():
     # declaring string variable
     epochs=tk.IntVar()
     vaccination_startDate = tk.IntVar()
-    map_of_day = tk.IntVar()
+    
     
     def submit():
         
         epoch_counter=epochs.get()
         v_day = vaccination_startDate.get()
-        m_o_d = map_of_day.get()
         print("Input Value: " + str(epoch_counter))
         root.destroy()
         return (epoch_counter, v_day)
@@ -107,13 +100,9 @@ def main():
     
     name_entry = tk.Entry(root,textvariable = epochs, font=('calibre',10,'normal'))
     
-    name_label_2 = tk.Label(root, text = 'Input vaccination startdate (input -1 to disable)', font=('calibre',10, 'bold'))
+    name_label_2 = tk.Label(root, text = 'Input vaccination startdate (input', font=('calibre',10, 'bold'))
     
     name_entry_2 = tk.Entry(root,textvariable = vaccination_startDate, font=('calibre',10,'normal'))
-
-    name_label_3 = tk.Label(root, text='Pick a day to access its map(Must be smaller than Input Epoch)', font=('calibre', 10, 'bold'))
-
-    name_entry_3 = tk.Entry(root, textvariable=map_of_day, font=('calibre', 10, 'normal'))
     
     sub_btn=tk.Button(root,text = 'Submit', command = submit)
     
@@ -121,9 +110,8 @@ def main():
     name_entry.grid(row=0,column=1)
     name_label_2.grid(row=1,column=0)
     name_entry_2.grid(row=1,column=1)
-    name_label_3.grid(row=2,column=0)
-    name_entry_3.grid(row=2, column=1)
-    sub_btn.grid(row=3,column=1)
+    
+    sub_btn.grid(row=2,column=1)
     
     root.mainloop()
 
@@ -133,7 +121,7 @@ def main():
     
     # Initialize infection
     
-    mm.sim_system.initialize_infection("Toronto City", 0.05)
+    mm.sim_system.initialize_infection("Toronto City", 0.01)
         
     tuple_of_results = mm.run_simulation(epochs.get(), vaccination_startDate.get())
     
@@ -160,10 +148,6 @@ def main():
     plt.ylabel('Proportion')
     plt.legend()
     plt.show()
-    graph_results(mappable_data, map_of_day.get())
 
 if __name__ == "__main__":
     main()
- 
-    
-    
