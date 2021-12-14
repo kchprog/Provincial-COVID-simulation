@@ -1,5 +1,4 @@
 import math
-from os import system
 import config as config_settings
 import csv
 import datetime as dt
