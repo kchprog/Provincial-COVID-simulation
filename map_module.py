@@ -31,25 +31,25 @@ def main():
     df.plot()
     
     
-def plot_sectors(sectors: list):
+def plot_sectors(data: list):
     """The plot_sectors function is used for producing the Covid Severity graph on a specific day
     
     """
     df = gpd.read_file("/mdf/OntarioShapefile.shp")
     geodatas = []
     ontario_map = df.plot()
-    for sector in sectors:
+    for mdata in data:
         # geodatas.append(virus_city(s)[0])
-        mp = {'city': [sector.name], 'population': [sector.population], 'longitude': [sector.longitude], 'latitude': [sector.latitude],
-             'density': [sector.density],
-             'infected': [sector.infectious_proportion], 'geometry': [Point(sector.longitude, sector.latitude)]}
+        mp = {'population': [mdata.total_population], 'longitude': [mdata.longitude], 'latitude': [mdata.latitude],
+             'density': [mdata.density],
+             'infected': [mdata.i_proportion], 'geometry': [Point(mdata.longitude, mdata.latitude)]}
         geodatas.append(mp)
     for m in geodatas:
         g = gpd.GeoDataFrame(m, crs='EPSG:4326')
         gf = gpd.GeoDataFrame(m, geometry=gpd.points_from_xy(g.latitude, g.longitude))
+        inf = min(0.99, g.infected[0])
         # Draws dots on map, the infected_proportion determines the translucency of the dots
-        gf.plot(ax=ontario_map, color='red', markersize=g.density/2, alpha=0.5)
-
+        gf.plot(ax=ontario_map, color='red', markersize=g.density/2, alpha=inf * 1.0)
     # ontario_map.legend(['Covid', 'Vaccinated'])
     # Title of map
     plt.title('Covid Severity')
