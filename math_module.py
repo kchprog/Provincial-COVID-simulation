@@ -49,7 +49,7 @@ class Sector():
         # populated areas like cities. 
 
         # per_capita_transmission_rate is the rate at which people in a Sector will spread the virus; it is the product of the baseline infection rate and a factor adjusting for the population density
-        self.per_capita_transmission_rate = max((1/1.5) * math.log(self.density, 10) - 1, 0.8)
+        self.per_capita_transmission_rate = max((1/1.5) * math.log(self.density, 10) - 1.1, 0.8)
         # the infection rate is the product of the r0 value and the rate of contact within a population. These arbitrary values are chosen to limit the simulated spread of the virus to a reasonable level.
 
     def __str__(self):
@@ -88,7 +88,7 @@ class Sector():
         f.close()
         """
 
-    def calculate_SIR(self):
+    def calculate_SIR(self, current_time: dt.datetime) -> None:
         # MUTATOR: calculate the NEW proportion of people in the Sector that are susceptible, infected, and recovered. 
         '''
         Test for calculate_SIR
@@ -122,7 +122,19 @@ class Sector():
 
         # calculate the new infected proportion
 
-        contact_rate_β = self.per_capita_transmission_rate * config_settings.daily_infection_rate 
+        contact_rate_β = self.per_capita_transmission_rate * config_settings.daily_infection_rate
+        
+        # simulate the higher infection observed in winter months
+        if current_time.month == 10 or current_time.month == 2:
+            contact_rate_β *= 1.05
+        elif current_time.month == 11 or current_time.month == 1:
+            contact_rate_β *= 1.1
+        elif current_time.month == 12:
+            contact_rate_β *= 1.15
+        else:
+            contact_rate_β *= 1
+            
+        
             
         infection_delta = self.infectious_proportion * contact_rate_β * self.susceptible_proportion 
         
@@ -173,7 +185,7 @@ class Sector():
                 self.susceptible_proportion -= self.local_vaccination_rollout_rate * (self.susceptible_proportion)
                 self.recovered_proportion -= self.local_vaccination_rollout_rate * (self.recovered_proportion)
 
-    def update_sector_sim(self) -> None:
+    def update_sector_sim(self, current_time: dt.datetime) -> None:
         '''
         Implements simulated self.policy changes through mutating internal values
         >>> city = Sector(name='Toronto City', population=3000000, geographic_area=630, \
@@ -197,10 +209,8 @@ class Sector():
             self.per_capita_transmission_rate = 0.0
         # else:
             # print('Error: invalid policy')
-
-        # calculate the new S/I/R values for this individual province, including effects from incoming transfers.
         
-        self.calculate_SIR()
+        self.calculate_SIR(current_time)
 
 
 class simulation_system:
@@ -234,7 +244,7 @@ class simulation_system:
 
     def update_global_simulation(self) -> list():
         for sector in self.system_sectors:
-            sector.update_sector_sim()
+            sector.update_sector_sim(self.current_time)
         self.current_time += dt.timedelta(days=1)
         
         
