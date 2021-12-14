@@ -97,6 +97,7 @@ def main():
         
         epoch_counter=epochs.get()
         v_day = vaccination_startDate.get()
+        m_o_d = mamp_of_day.get()
         print("Input Value: " + str(epoch_counter))
         root.destroy()
         return (epoch_counter, v_day)
@@ -159,7 +160,7 @@ def main():
     plt.ylabel('Proportion')
     plt.legend()
     plt.show()
-    graph_results(mappable_data, map_of_epoch.get())
+    graph_results(mappable_data, map_of_day.get())
 
 if __name__ == "__main__":
     main()
