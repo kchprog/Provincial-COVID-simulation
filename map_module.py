@@ -52,7 +52,7 @@ def plot_sectors(data: list, day: int):
         gf.plot(ax=ontario_map, color='red', markersize=g.density/2, alpha=inf * 1.0)
     # ontario_map.legend(['Covid', 'Vaccinated'])
     # Title of map
-    plt.title('Covid Severity ' + day)
+    plt.title('Covid Severity ' + str(day))
     
     
 def read_shapefile(sf):
