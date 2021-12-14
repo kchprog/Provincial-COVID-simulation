@@ -40,6 +40,9 @@ class graphable_sector:
     r_proportion = 0
     v_proportion = 0
     
+    longitude = 0
+    latitude = 0
+    
     total_population = 0
     sector_type = ""
     
@@ -48,6 +51,8 @@ class graphable_sector:
         self.i_proportion = sector.infectious_proportion
         self.r_proportion = sector.recovered_proportion
         self.v_proportion = sector.vaccinated_proportion
+        self.longitude = sector.longitude
+        sector.latitude = sector.latitude
         self.total_population = sector.population
         self.sector_type = sector.type
 
