@@ -80,6 +80,7 @@ def graph_results(input_dictionary: dict, key: int):
 
 
 
+
 def main():
 
     # GUI
@@ -97,7 +98,7 @@ def main():
         
         epoch_counter=epochs.get()
         v_day = vaccination_startDate.get()
-        m_o_d = mamp_of_day.get()
+        m_o_d = map_of_day.get()
         print("Input Value: " + str(epoch_counter))
         root.destroy()
         return (epoch_counter, v_day)
@@ -109,8 +110,8 @@ def main():
     name_label_2 = tk.Label(root, text = 'Input vaccination startdate (input -1 to disable)', font=('calibre',10, 'bold'))
     
     name_entry_2 = tk.Entry(root,textvariable = vaccination_startDate, font=('calibre',10,'normal'))
-    
-    name_label_3 = tk.Label(root, text='Pick a day to access its map(Must be smaller than epoch inptu)', font=('calibre', 10, 'bold'))
+
+    name_label_3 = tk.Label(root, text='Pick a day to access its map', font=('calibre', 10, 'bold'))
 
     name_entry_3 = tk.Entry(root, textvariable=map_of_day, font=('calibre', 10, 'normal'))
     
@@ -122,7 +123,6 @@ def main():
     name_entry_2.grid(row=1,column=1)
     name_label_3.grid(row=2,column=0)
     name_entry_3.grid(row=2, column=1)
-    
     sub_btn.grid(row=3,column=1)
     
     root.mainloop()
@@ -164,8 +164,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
-    
  
     
     
