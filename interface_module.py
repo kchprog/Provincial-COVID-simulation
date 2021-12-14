@@ -4,7 +4,7 @@ from math_module import Sector as Sector
 import matplotlib.pyplot as plt
 import datetime as dt
 import config as cfg
-# import map_module
+import map_module as map
 
 
 import tkinter as tk
@@ -39,7 +39,9 @@ class graphable_sector:
     i_proportion = 0
     r_proportion = 0
     v_proportion = 0
-    
+    longitude = 0
+    latitude = 0
+    density = 0
     total_population = 0
     sector_type = ""
     
@@ -50,6 +52,9 @@ class graphable_sector:
         self.v_proportion = sector.vaccinated_proportion
         self.total_population = sector.population
         self.sector_type = sector.type
+        self.longitude = sector.longitude
+        self.latitude = sector.latitude
+        self.density = sector.density
 
 
 def convert_sector_info_to_mappable_information(input_dictionary: dict) -> dict:
@@ -66,12 +71,12 @@ def convert_sector_info_to_mappable_information(input_dictionary: dict) -> dict:
     return dict_to_return
 
 
-def graph_results(input_dictionary: dict):
+def graph_results(input_dictionary: dict, key: int):
     """
     Takes in a dictionary of the simulated results as graphical_sector objects
     and graphs them using the map_module imported.
     """
-    return None
+    map.plot_sectors(input_dictionary[key])
 
 
 
