@@ -47,7 +47,7 @@ def plot_sectors(data: list, day: int):
     for m in geodatas:
         g = gpd.GeoDataFrame(m, crs='EPSG:4326')
         gf = gpd.GeoDataFrame(m, geometry=gpd.points_from_xy(g.latitude, g.longitude))
-        inf = min(0.99, g.infected[0] * 40.0)
+        inf = min(0.99, g.infected[0] * 25.0)
         # Draws dots on map, the infected_proportion determines the translucency of the dots
         gf.plot(ax=ontario_map, color='red', markersize=g.density/2, alpha=inf)
     # ontario_map.legend(['Covid', 'Vaccinated'])
