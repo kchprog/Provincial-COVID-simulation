@@ -24,9 +24,11 @@ class math_module_processor:
         self.simulation_state_dict = {}
         self.provincial_stats = {}
         
-    def run_simulation(self, epochs: int):
+    def run_simulation(self, epochs: int, vaccination_start: int):
         # run the simulation
         for i in range(epochs):
+            if i == vaccination_start:
+                self.sim_system.initialize_vaccination()
             self.simulation_state_dict[i] = self.sim_system.update_global_simulation()
             self.provincial_stats[i] = self.sim_system.fetch_global_stats()
         return (self.simulation_state_dict, self.provincial_stats)
@@ -37,9 +39,7 @@ class graphable_sector:
     i_proportion = 0
     r_proportion = 0
     v_proportion = 0
-    longitude = 0
-    latitude = 0
-    density = 0
+    
     total_population = 0
     sector_type = ""
     
@@ -50,9 +50,6 @@ class graphable_sector:
         self.v_proportion = sector.vaccinated_proportion
         self.total_population = sector.population
         self.sector_type = sector.type
-        self.longitude = sector.longitude
-        self.latitude = sector.latitude
-        self.density = sector.density
 
 
 def convert_sector_info_to_mappable_information(input_dictionary: dict) -> dict:
@@ -84,29 +81,36 @@ def main():
     root=tk.Tk()
     
     # setting the windows size
-    root.geometry("200x200")
+    root.geometry("400x200")
     
     # declaring string variable
     epochs=tk.IntVar()
+    vaccination_startDate = tk.IntVar()
     
     
     def submit():
         
-        temp=epochs.get()
-            
-        print("Input Value: " + str(temp))
+        epoch_counter=epochs.get()
+        v_day = vaccination_startDate.get()
+        print("Input Value: " + str(epoch_counter))
         root.destroy()
-        return temp
+        return (epoch_counter, v_day)
         
     name_label = tk.Label(root, text = 'Input epochs', font=('calibre',10, 'bold'))
     
     name_entry = tk.Entry(root,textvariable = epochs, font=('calibre',10,'normal'))
     
+    name_label_2 = tk.Label(root, text = 'Input vaccination startdate (input -1 to disable)', font=('calibre',10, 'bold'))
+    
+    name_entry_2 = tk.Entry(root,textvariable = vaccination_startDate, font=('calibre',10,'normal'))
+    
     sub_btn=tk.Button(root,text = 'Submit', command = submit)
     
     name_label.grid(row=0,column=0)
     name_entry.grid(row=0,column=1)
-
+    name_label_2.grid(row=1,column=0)
+    name_entry_2.grid(row=1,column=1)
+    
     sub_btn.grid(row=2,column=1)
     
     root.mainloop()
@@ -119,11 +123,13 @@ def main():
     
     mm.sim_system.initialize_infection("Toronto City", 0.05)
         
-    tuple_of_results = mm.run_simulation(epochs.get())
+    tuple_of_results = mm.run_simulation(epochs.get(), vaccination_startDate.get())
+    
     sector_data = tuple_of_results[0]
     
     global_data = tuple_of_results[1]
     print(global_data)
+    
     mappable_data = convert_sector_info_to_mappable_information(sector_data)
     
     xAxis = [key for key in global_data]
