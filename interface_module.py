@@ -112,7 +112,7 @@ def main():
     
     name_label_3 = tk.Label(root, text='Pick a day to access its map', font=('calibre', 10, 'bold'))
 
-    name_entry_3 = tk.Entry(root, textvariable=map_of_epoch, font=('calibre', 10, 'normal'))
+    name_entry_3 = tk.Entry(root, textvariable=map_of_day, font=('calibre', 10, 'normal'))
     
     sub_btn=tk.Button(root,text = 'Submit', command = submit)
     
