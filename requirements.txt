@@ -3,7 +3,6 @@ math
 datetime
 csv 
 numpy
-os
 
 # Visualization
 geopandas
@@ -13,3 +12,10 @@ pandas
 shapefile
 matplotlib.pyplot
 seaborn
+
+# Internal dependencies (associated files). Download all files from https://github.com/kchprog/Provincial-COVID-simulation
+math_module.py
+map_module.py
+main.py
+config.py
+City_data_config.csv
