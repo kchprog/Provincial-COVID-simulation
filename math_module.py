@@ -49,7 +49,7 @@ class Sector():
         # populated areas like cities. 
 
         # per_capita_transmission_rate is the rate at which people in a Sector will spread the virus; it is the product of the baseline infection rate and a factor adjusting for the population density
-        self.per_capita_transmission_rate = max(math.log(self.density, 10), 0.6)
+        self.per_capita_transmission_rate = max((1/1.5) * math.log(self.density, 10) - 1, 0.8)
         # the infection rate is the product of the r0 value and the rate of contact within a population. These arbitrary values are chosen to limit the simulated spread of the virus to a reasonable level.
 
     def __str__(self):
