@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import csv
 import math_module
-from shapely.geometry import point
+from shapely.geometry import Point
 
 def main():
     list_of_cities = math_module.setup()
