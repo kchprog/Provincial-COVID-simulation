@@ -35,7 +35,7 @@ def plot_sectors(data: list, day: int):
     """The plot_sectors function is used for producing the Covid Severity graph on a specific day
     
     """
-    df = gpd.read_file("/mdf/OntarioShapefile.shp")
+    df = gpd.read_file("mdf/OntarioShapefile.shp")
     geodatas = []
     ontario_map = df.plot()
     for mdata in data:
