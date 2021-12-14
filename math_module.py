@@ -318,7 +318,7 @@ def sector_setup() -> list[Sector]:
 
     for sect in regions:
         for neighbor in regions:
-            if sect != neighbor and calculate_distance_between_Sectors(sect, neighbor) < 800000 and calculate_distance_between_Sectors(sect, neighbor) > 1:
+            if sect != neighbor and calculate_distance_between_Sectors(sect, neighbor) < 500000 and calculate_distance_between_Sectors(sect, neighbor) > 1:
                 sect.neighbor_handler_list.append(neighbor)
                 # print(sect.neighbor_handler_list)
                 
