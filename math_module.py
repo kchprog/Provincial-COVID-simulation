@@ -56,10 +56,6 @@ class Sector():
         return '{} has a population of {} and an area of {} and a density of {}'.format(self.name, self.population, self.geographic_area, self.density)
 
 
-    def debug_print(self):
-        print("success")
-
-
     def get_status(self):
         return '{} statistics: S == {}, I == {}, R == {}, R-vaccinated = {}, sum = {}'.format(self.name, self.susceptible_proportion, self.infectious_proportion, self.recovered_proportion, self.vaccinated_proportion, self.susceptible_proportion + self.infectious_proportion + self.recovered_proportion + self.vaccinated_proportion)
 
@@ -127,7 +123,7 @@ class Sector():
 
         # calculate the new infected proportion
 
-        contact_rate_β = self.per_capita_transmission_rate * config_settings.daily_infection_rate * 0.8
+        contact_rate_β = self.per_capita_transmission_rate * config_settings.daily_infection_rate * 0.7
         
         # simulate the higher infection observed in winter months
         if current_time.month == 10 or current_time.month == 2:
@@ -235,14 +231,14 @@ class simulation_system:
         
         print(self.province_city_population)
 
-    def initialize_infection(self, sector_name, proportion):
+    def initialize_infection(self, sector_name, proportion) -> None:
         for sector in self.system_sectors:
             if sector.name == sector_name:
                 sector.infectious_proportion = proportion
                 sector.susceptible_proportion = sector.susceptible_proportion - proportion
                 print('Initializing infection in sector: ' + sector.name + ' with proportion: ' + str(proportion))
         
-    def initialize_vaccination(self):
+    def initialize_vaccination(self) -> None:
         for sector in self.system_sectors:
             sector.vaccination_program = True
             
@@ -251,8 +247,6 @@ class simulation_system:
         for sector in self.system_sectors:
             sector.update_sector_sim(self.current_time)
         self.current_time += dt.timedelta(days=1)
-        
-        
         return self.system_sectors
     
     def fetch_global_stats(self) -> list():
@@ -264,9 +258,7 @@ class simulation_system:
             sum_V += sector.vaccinated_proportion * sector.population
         
         return [sum_S / self.province_city_population, sum_I / self.province_city_population, sum_R / self.province_city_population, sum_V / self.province_city_population]
-        
-    
-    
+
     def compute_and_return_sector_data(self) -> dict():
         sector_data = {sector:(sector.susceptible_proportion, sector.infectious_proportion, sector.recovered_proportion, sector.vaccinated_proportion) for sector in self.system_sectors}
         return sector_data
