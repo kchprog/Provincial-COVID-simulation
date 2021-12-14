@@ -105,16 +105,18 @@ class Sector():
         '''
 
         print("calculate_SIR called")
+        print(self.get_status())
         # algorithm for calculating the transfer of infected individuals from neighboring provinces
         
         for neighbor in self.neighbor_handler_list:
+            if neighbor.name != self.name:
+                combined_transfer_value = neighbor.infectious_proportion * self.travelRate / (300)
+                
+                self.susceptible_proportion -= combined_transfer_value
+                self.infectious_proportion += combined_transfer_value
             
-            distance_factor = 1.5 - math.log(neighbor.travelRate, 10) * (1/3)
-            combined_transfer_value = 0.1 * distance_factor * neighbor.infectious_proportion * self.travelRate / (10 * self.population)
-            
-            self.susceptible_proportion -= combined_transfer_value
-            self.infectious_proportion += combined_transfer_value
-            
+                neighbor.susceptible_proportion += combined_transfer_value
+                neighbor.infectious_proportion -= combined_transfer_value
         # a portion of individuals in the 'RECOVERED' and 'VACCINATED' groups will be infected. 
 
         if self.susceptible_proportion + self.infectious_proportion + self.recovered_proportion + self.vaccinated_proportion != 1.0:
@@ -122,7 +124,7 @@ class Sector():
 
         # calculate the new infected proportion
 
-        contact_rate_β = self.per_capita_transmission_rate * config_settings.daily_infection_rate
+        contact_rate_β = self.per_capita_transmission_rate * config_settings.daily_infection_rate * 0.8
         
         # simulate the higher infection observed in winter months
         if current_time.month == 10 or current_time.month == 2:
@@ -253,11 +255,6 @@ class simulation_system:
     def fetch_global_stats(self) -> list():
         sum_S, sum_I, sum_R, sum_V = 0,0,0,0
         for sector in self.system_sectors:
-            print(sector.name)
-            print(sector.susceptible_proportion)
-            print(sector.infectious_proportion)
-            print(sector.infectious_proportion)
-            print(sector.vaccinated_proportion)
             sum_S += sector.susceptible_proportion * sector.population
             sum_I += sector.infectious_proportion * sector.population
             sum_R += sector.recovered_proportion * sector.population
@@ -321,7 +318,7 @@ def sector_setup() -> list[Sector]:
 
     for sect in regions:
         for neighbor in regions:
-            if sect != neighbor and calculate_distance_between_Sectors(sect, neighbor) < 200000 and calculate_distance_between_Sectors(sect, neighbor) > 1:
+            if sect != neighbor and calculate_distance_between_Sectors(sect, neighbor) < 800000 and calculate_distance_between_Sectors(sect, neighbor) > 1:
                 sect.neighbor_handler_list.append(neighbor)
                 # print(sect.neighbor_handler_list)
                 
